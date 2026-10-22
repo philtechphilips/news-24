@@ -1,69 +1,136 @@
 import Image from "next/image";
+import Link from "next/link";
+import {
+  BlogCard,
+  CategoryTag,
+  NewsListItem,
+  PodcastCard,
+  SectionHeader,
+  TrendingCard,
+  WriterCard,
+} from "@/components/cards";
+import SubscribeForm from "@/components/SubscribeForm";
+import {
+  featuredPosts,
+  latestNews,
+  popularBlogs,
+  trendingPosts,
+} from "@/lib/content";
+import { podcasts, writers } from "@/lib/data";
+import type { Post } from "@/lib/types";
 
 export default function Home() {
+  const [lead, ...sideStories] = featuredPosts();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <section aria-label="Featured stories" className="grid gap-4 md:grid-cols-[2fr_1fr]">
+        <FeatureTile post={lead} size="lg" />
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-1">
+          {sideStories.map((post) => (
+            <FeatureTile key={post.slug} post={post} size="sm" />
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="mt-20">
+        <SectionHeader title="Latest News" />
+        <div className="grid gap-5 lg:grid-cols-[2fr_1fr]">
+          <div className="space-y-4">
+            {latestNews().map((post) => (
+              <NewsListItem key={post.slug} post={post} />
+            ))}
+          </div>
+          <div>
+            <TrendingCard posts={trendingPosts()} />
+          </div>
         </div>
-      </main>
+        <Link
+          href="/blogs"
+          className="mt-6 inline-block rounded-sm border border-brand px-3 py-1.5 text-[11px] font-medium text-brand transition hover:bg-brand hover:text-white"
+        >
+          View All
+        </Link>
+      </section>
+
+      <section className="mt-20">
+        <SectionHeader title="Staff Writers" href="/writers" />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {writers.slice(0, 4).map((writer) => (
+            <WriterCard key={writer.slug} writer={writer} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-20">
+        <SectionHeader title="Popular Blogs" href="/blogs" />
+        <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          {popularBlogs().map((post) => (
+            <BlogCard key={post.slug} post={post} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-20">
+        <SectionHeader title="Latest Podcast" />
+        <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          {podcasts.slice(0, 3).map((podcast) => (
+            <PodcastCard key={podcast.slug} podcast={podcast} />
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Link
+            href="/podcasts"
+            className="inline-block rounded-sm bg-brand px-4 py-2 text-[11px] font-medium text-white transition hover:bg-brand-dark"
+          >
+            Browse All Podcasts
+          </Link>
+        </div>
+      </section>
+
+      <section
+        id="subscribe"
+        className="mt-24 scroll-mt-8 rounded-xl bg-night px-6 py-16 text-center text-white md:py-20"
+      >
+        <h2 className="mx-auto max-w-xl text-2xl leading-snug font-medium md:text-3xl">
+          Get the news in front line by subscribe ✍️ our latest updates
+        </h2>
+        <div className="mt-8">
+          <SubscribeForm variant="banner" />
+        </div>
+      </section>
     </div>
+  );
+}
+
+function FeatureTile({ post, size }: { post: Post; size: "lg" | "sm" }) {
+  const lg = size === "lg";
+  return (
+    <Link
+      href={`/blogs/${post.slug}`}
+      className={`group relative block overflow-hidden rounded-md bg-night ${
+        lg ? "aspect-4/3 md:aspect-auto md:min-h-105" : "aspect-16/10 md:aspect-auto md:min-h-50.5"
+      }`}
+    >
+      <Image
+        src={post.image}
+        alt={post.imageAlt}
+        fill
+        preload={lg}
+        sizes={lg ? "(min-width: 768px) 740px, 100vw" : "(min-width: 768px) 370px, 50vw"}
+        className="object-cover transition duration-700 group-hover:scale-105"
+      />
+      <span className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+      <span className={`absolute inset-x-0 bottom-0 ${lg ? "p-6 md:p-8" : "p-4"}`}>
+        <CategoryTag slug={post.category} />
+        <span
+          className={`mt-3 block font-medium text-white ${
+            lg ? "max-w-lg text-xl leading-snug md:text-2xl" : "text-xs leading-5"
+          }`}
+        >
+          {post.title}
+        </span>
+      </span>
+    </Link>
   );
 }
