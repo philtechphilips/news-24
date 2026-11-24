@@ -52,6 +52,12 @@ export const ArrowRightIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const CornerDownRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 4v6a4 4 0 0 0 4 4h10M15 10l4 4-4 4" />
+  </Icon>
+);
+
 export const ChevronDownIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="m6 9 6 6 6-6" />

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDate, getCategory, postsByWriter, readTime } from "@/lib/content";
 import type { Podcast, Post, Writer } from "@/lib/types";
-import { ArrowRightIcon, MicIcon } from "./icons";
+import { CornerDownRightIcon, MicIcon } from "./icons";
 
 export function CategoryTag({ slug, link = false }: { slug: string; link?: boolean }) {
   const category = getCategory(slug);
@@ -37,7 +37,7 @@ function CardLabel({ label, meta, tone }: { label: string; meta?: string; tone: 
 function ReadMore({ label = "Read more", className = "" }: { label?: string; className?: string }) {
   return (
     <span aria-hidden="true" className={`inline-flex items-start gap-1.5 transition-colors duration-300 ${className}`}>
-      <ArrowRightIcon size={12} strokeWidth={2.2} className="mt-1 shrink-0" />
+      <CornerDownRightIcon size={13} strokeWidth={2} className="mt-0.5 shrink-0" />
       <span className="relative overflow-hidden pb-1.5 text-[15px] font-medium leading-none">
         {label}
         <span className="absolute inset-x-0 bottom-0 h-0.5 bg-current opacity-20" />
@@ -49,6 +49,42 @@ function ReadMore({ label = "Read more", className = "" }: { label?: string; cla
 
 /** Stretches a title link over its whole card so the card is one click target. */
 const stretchedLink = "after:absolute after:inset-0 after:content-['']";
+
+/**
+ * A 12px quarter-circle filler that rounds the outside corner where a notch meets
+ * a card edge. `at` is the corner the curve is centred on.
+ */
+const outerCorner = (at: "top left" | "bottom right", color: string) => ({
+  background: `radial-gradient(circle at ${at}, transparent 11.5px, ${color} 12px)`,
+});
+
+/** Tab cut out of a card's bottom-right corner. `color` must match what's behind the card. */
+function NotchBottomRight({ color = "#fff" }: { color?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute right-0 bottom-0 z-10 h-8 w-16 rounded-tl-xl"
+      style={{ background: color }}
+    >
+      <span className="absolute right-0 bottom-full size-3" style={outerCorner("top left", color)} />
+      <span className="absolute right-full bottom-0 size-3" style={outerCorner("top left", color)} />
+    </span>
+  );
+}
+
+/** Tab cut out of an image's top-left corner, filled with the card colour around it. */
+function NotchTopLeft({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute top-0 left-0 z-10 h-8 w-20 rounded-br-xl md:w-36"
+      style={{ background: color }}
+    >
+      <span className="absolute top-0 left-full size-3" style={outerCorner("bottom right", color)} />
+      <span className="absolute top-full left-0 size-3" style={outerCorner("bottom right", color)} />
+    </span>
+  );
+}
 
 export function SectionHeader({
   title,
@@ -108,10 +144,10 @@ export function SpotlightLead({ post }: { post: Post }) {
               {post.title}
             </Link>
           </h2>
-          <p className="hidden max-w-xl text-base leading-7 text-white/75 md:block">{post.excerpt}</p>
           <ReadMore className="text-white group-hover:text-brand-light" />
         </div>
-        <div className="relative mt-6 aspect-214/85 translate-y-2 overflow-hidden rounded-t-xl bg-white/10 transition-transform duration-700 group-hover:translate-y-0 md:mt-10">
+        <div className="relative mt-6 aspect-214/85 translate-y-2 overflow-hidden rounded-tr-xl bg-white/10 transition-transform duration-700 group-hover:translate-y-0 md:mt-10">
+          <NotchTopLeft color="var(--color-brand-deep)" />
           <Image
             src={post.image}
             alt={post.imageAlt}
@@ -138,6 +174,7 @@ export function SpotlightCard({ post }: { post: Post }) {
         </Link>
       </h3>
       <ReadMore className="mt-auto group-hover:text-brand" />
+      <NotchBottomRight />
     </article>
   );
 }
