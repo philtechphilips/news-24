@@ -52,6 +52,18 @@ export const ArrowRightIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const CornerDownRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 4v6a4 4 0 0 0 4 4h10M15 10l4 4-4 4" />
+  </Icon>
+);
+
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+);
+
 export const HeartIcon = ({ filled, ...p }: IconProps & { filled?: boolean }) => (
   <Icon {...p} fill={filled ? "currentColor" : "none"}>
     <path d="M12 20s-7-4.4-9.2-8.6C1.3 8.5 3 5 6.4 5c2 0 3.3 1.1 4.1 2.3h3c.8-1.2 2.1-2.3 4.1-2.3C21 5 22.7 8.5 21.2 11.4 19 15.6 12 20 12 20Z" />
@@ -122,5 +134,81 @@ export const LinkedInLogo = (p: IconProps) => (
   <Icon {...p}>
     <rect x="3" y="3" width="18" height="18" rx="3" />
     <path d="M8 10v7M8 7v.01M12 17v-4a2 2 0 0 1 4 0v4M12 10v7" />
+  </Icon>
+);
+
+export const GridIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+    <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+    <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+    <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+  </Icon>
+);
+
+export const FileTextIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5M9 13h6M9 17h6" />
+  </Icon>
+);
+
+export const TagIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z" />
+    <circle cx="8" cy="8" r="1.5" />
+  </Icon>
+);
+
+export const UsersIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" />
+  </Icon>
+);
+
+export const LogOutIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5M15 8l4 4-4 4M19 12H9" />
+  </Icon>
+);
+
+export const PlusIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
+
+export const PencilIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" />
+    <path d="m13.5 6.5 4 4" />
+  </Icon>
+);
+
+export const LinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Icon>
+);
+
+export const MailIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m4 7 8 6 8-6" />
+  </Icon>
+);
+
+export const FacebookLogo = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 21v-8h3l.5-3.5H14V7.8c0-1 .3-1.8 1.8-1.8h1.8V3a24 24 0 0 0-2.6-.1C12.4 2.9 10.6 4.5 10.6 7.4v2.1H7.5V13h3.1v8" />
+  </Icon>
+);
+
+export const WhatsAppLogo = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 20l1.2-4.1A8.5 8.5 0 1 1 8.4 19L4 20Z" />
+    <path d="M9 8.5c0 3.6 2.9 6.5 6.5 6.5l1-1.6-2-1-1 .9a4.4 4.4 0 0 1-2.3-2.3l.9-1-1-2Z" />
   </Icon>
 );

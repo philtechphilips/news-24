@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import { allPosts, getCategory } from "@/lib/content";
+import { Inter, Varela_Round } from "next/font/google";
 import "./globals.css";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const varela = Varela_Round({
+  variable: "--font-varela",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -21,20 +23,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const searchIndex = allPosts().map((p) => ({
-    slug: p.slug,
-    title: p.title,
-    image: p.image,
-    category: getCategory(p.category)?.name ?? "",
-  }));
-
   return (
-    <html lang="en" className={`${poppins.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">
-        <Header searchIndex={searchIndex} />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+    <html lang="en" className={`${inter.variable} ${varela.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
   );
 }

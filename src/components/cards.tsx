@@ -1,46 +1,195 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  formatDate,
-  getCategory,
-  getWriter,
-  postsByWriter,
-  readTime,
-} from "@/lib/content";
+import { formatDate, readTime } from "@/lib/content";
 import type { Podcast, Post, Writer } from "@/lib/types";
-import { ArrowUpRightIcon, MicIcon } from "./icons";
+import { CornerDownRightIcon, MicIcon } from "./icons";
+import SiteMark from "./SiteMark";
 
-export function CategoryTag({ slug, link = false }: { slug: string; link?: boolean }) {
-  const category = getCategory(slug);
-  if (!category) return null;
-  const className = `inline-block rounded-sm px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${category.tagClass}`;
-  return link ? (
-    <Link href={`/category/${category.slug}`} className={className}>
-      {category.name}
+export function CategoryTag({
+  slug,
+  name,
+  link = false,
+}: {
+  slug: string;
+  name: string;
+  link?: boolean;
+}) {
+  const className =
+    "inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand-ink";
+  return link && slug ? (
+    <Link href={`/category/${slug}`} className={`${className} hover:bg-brand-light`}>
+      {name}
     </Link>
   ) : (
-    <span className={className}>{category.name}</span>
+    <span className={className}>{name}</span>
+  );
+}
+
+/** Only Unsplash is configured for next/image; other hosts load as-is. */
+const optimizable = (src: string) => src.startsWith("https://images.unsplash.com/photo-");
+
+/**
+ * An image filling its (relative) parent. Without a src it shows `fallback`,
+ * or the site mark on pastel.
+ */
+export function Cover({
+  src,
+  alt,
+  sizes,
+  preload = false,
+  className = "",
+  fallback,
+}: {
+  src: string | null;
+  alt: string;
+  sizes: string;
+  preload?: boolean;
+  className?: string;
+  fallback?: React.ReactNode;
+}) {
+  if (!src) {
+    return (
+      <span
+        className="absolute inset-0 grid place-items-center bg-brand-soft text-brand-ink"
+        aria-hidden="true"
+      >
+        {fallback ?? <SiteMark size={56} className="rounded-xl opacity-90" />}
+      </span>
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      preload={preload}
+      sizes={sizes}
+      unoptimized={!optimizable(src)}
+      className={`object-cover ${className}`}
+    />
+  );
+}
+
+export function PostCover({
+  post,
+  ...props
+}: { post: Post } & Omit<Parameters<typeof Cover>[0], "src" | "alt">) {
+  return <Cover src={post.image} alt={post.imageAlt} {...props} />;
+}
+
+/** A writer's photo, or their initials when they have none. */
+export function Avatar({
+  writer,
+  sizes,
+  preload,
+  className,
+}: {
+  writer: Writer;
+  sizes: string;
+  preload?: boolean;
+  className?: string;
+}) {
+  const initials = writer.name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("");
+  return (
+    <Cover
+      src={writer.avatar}
+      alt={`Portrait of ${writer.name}`}
+      sizes={sizes}
+      preload={preload}
+      className={className}
+      fallback={<span className="font-display text-[length:inherit] uppercase">{initials}</span>}
+    />
+  );
+}
+
+/** "Economy — 4 min read" line shown above every card title. */
+function CardLabel({ label, meta, tone }: { label: string; meta?: string; tone: string }) {
+  return (
+    <p className="space-x-2 text-sm font-medium">
+      <span className={tone}>{label}</span>
+      {meta && (
+        <>
+          <span className="opacity-20">—</span>
+          <span className="opacity-80">{meta}</span>
+        </>
+      )}
+    </p>
+  );
+}
+
+/** Arrow + "Read more" with an underline that slides in on card hover. */
+function ReadMore({ label = "Read more", className = "" }: { label?: string; className?: string }) {
+  return (
+    <span aria-hidden="true" className={`inline-flex items-start gap-1.5 transition-colors duration-300 ${className}`}>
+      <CornerDownRightIcon size={13} strokeWidth={2} className="mt-0.5 shrink-0" />
+      <span className="relative overflow-hidden pb-1.5 text-[15px] font-medium leading-none">
+        {label}
+        <span className="absolute inset-x-0 bottom-0 h-0.5 bg-current opacity-20" />
+        <span className="absolute inset-x-0 bottom-0 h-0.5 -translate-x-full bg-current transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+      </span>
+    </span>
+  );
+}
+
+/** Stretches a title link over its whole card so the card is one click target. */
+const stretchedLink = "after:absolute after:inset-0 after:content-['']";
+
+/**
+ * A 12px quarter-circle filler that rounds the outside corner where a notch meets
+ * a card edge. `at` is the corner the curve is centred on.
+ */
+const outerCorner = (at: "top left" | "bottom right", color: string) => ({
+  background: `radial-gradient(circle at ${at}, transparent 11.5px, ${color} 12px)`,
+});
+
+/** Tab cut out of a card's bottom-right corner. `color` must match what's behind the card. */
+function NotchBottomRight({ color = "#fff" }: { color?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute right-0 bottom-0 z-10 h-8 w-16 rounded-tl-xl"
+      style={{ background: color }}
+    >
+      <span className="absolute right-0 bottom-full size-3" style={outerCorner("top left", color)} />
+      <span className="absolute right-full bottom-0 size-3" style={outerCorner("top left", color)} />
+    </span>
+  );
+}
+
+/** Tab cut out of an image's top-left corner, filled with the card colour around it. */
+function NotchTopLeft({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute top-0 left-0 z-10 h-8 w-20 rounded-br-xl md:w-36"
+      style={{ background: color }}
+    >
+      <span className="absolute top-0 left-full size-3" style={outerCorner("bottom right", color)} />
+      <span className="absolute top-full left-0 size-3" style={outerCorner("bottom right", color)} />
+    </span>
   );
 }
 
 export function SectionHeader({
   title,
   href,
-  linkLabel = "View All",
+  linkLabel = "View all",
 }: {
   title: string;
   href?: string;
   linkLabel?: string;
 }) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4">
-      <h2 className="text-2xl font-medium tracking-tight">{title}</h2>
+    <div className="mb-5 flex items-end justify-between gap-4 md:mb-8">
+      <h2 className="font-display text-2xl leading-[1.1] md:text-[1.75rem]">{title}</h2>
       {href && (
-        <Link
-          href={href}
-          className="flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-        >
-          {linkLabel} <ArrowUpRightIcon size={13} />
+        <Link href={href} className="group relative shrink-0 text-ink hover:text-brand">
+          <ReadMore label={linkLabel} />
+          <span className="sr-only">{linkLabel}</span>
         </Link>
       )}
     </div>
@@ -59,174 +208,132 @@ export function PageIntro({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="py-10 md:py-14">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
-        {eyebrow}
-      </p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">{title}</h1>
+    <div className="mb-10 border-b border-ink/10 pt-10 pb-10 md:mb-14 md:pt-16 md:pb-14">
+      <p className="text-sm font-medium text-brand-ink">{eyebrow}</p>
+      <h1 className="mt-3 max-w-4xl font-display text-4xl leading-[1.05] md:text-6xl">{title}</h1>
       {description && (
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-muted md:text-base">
-          {description}
-        </p>
+        <p className="mt-5 max-w-2xl text-base leading-7 text-ink/75 md:text-lg">{description}</p>
       )}
       {children}
     </div>
   );
 }
 
-export function BlogCard({ post }: { post: Post }) {
+/** Large deep-coral card that leads the spotlight block. */
+export function SpotlightLead({ post }: { post: Post }) {
   return (
-    <article className="group flex flex-col">
-      <Link
-        href={`/blogs/${post.slug}`}
-        className="relative block aspect-4/3 overflow-hidden rounded-md bg-surface"
-      >
-        <Image
-          src={post.image}
-          alt={post.imageAlt}
-          fill
-          sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
-        />
-        <span className="absolute top-3 left-3">
-          <CategoryTag slug={post.category} />
-        </span>
-      </Link>
-      <h3 className="mt-4 line-clamp-2 text-[15px] leading-snug font-medium">
-        <Link href={`/blogs/${post.slug}`} className="hover:text-brand">
-          {post.title}
-        </Link>
-      </h3>
-      <div className="mt-2 flex items-center justify-between text-[11px] text-muted">
-        <time dateTime={post.date}>{formatDate(post.date)}</time>
-        <span>{readTime(post)}</span>
-      </div>
-      <Link
-        href={`/blogs/${post.slug}`}
-        className="mt-3 w-fit rounded-full border border-brand px-3 py-1 text-[10px] font-medium text-brand transition hover:bg-brand hover:text-white"
-      >
-        Read more
-      </Link>
-    </article>
-  );
-}
-
-export function NewsListItem({ post }: { post: Post }) {
-  const category = getCategory(post.category);
-  return (
-    <article className="group flex flex-col gap-4 rounded-lg border border-line bg-white p-3 shadow-[0_1px_8px_rgba(0,0,0,0.04)] sm:flex-row">
-      <Link
-        href={`/blogs/${post.slug}`}
-        className="relative aspect-16/10 shrink-0 overflow-hidden rounded-md bg-surface sm:aspect-auto sm:h-auto sm:w-48"
-      >
-        <Image
-          src={post.image}
-          alt={post.imageAlt}
-          fill
-          sizes="(min-width: 640px) 192px, 100vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
-        />
-      </Link>
-      <div className="flex min-w-0 flex-col py-1">
-        <h3 className="text-[15px] leading-snug font-medium">
-          <Link href={`/blogs/${post.slug}`} className="hover:text-brand">
-            {post.title}
-          </Link>
-        </h3>
-        <p className="mt-2 line-clamp-3 text-xs leading-5 text-muted">{post.excerpt}</p>
-        <div className="mt-auto flex gap-8 pt-3 text-[10px] text-muted">
-          <span>{category?.name}</span>
-          <time dateTime={post.date}>{formatDate(post.date)}</time>
+    <article className="group relative">
+      <div className="overflow-hidden rounded-xl bg-brand-deep px-6 pt-6 text-white md:px-16 md:pt-12">
+        <div className="max-w-2xl space-y-4 md:space-y-6">
+          <CardLabel label={post.categoryName} meta={readTime(post)} tone="text-brand-light" />
+          <h2 className="font-display text-3xl leading-[1.1] md:text-5xl">
+            <Link href={`/blogs/${post.slug}`} className={stretchedLink}>
+              {post.title}
+            </Link>
+          </h2>
+          <ReadMore className="text-white group-hover:text-brand-light" />
+        </div>
+        <div className="relative mt-6 aspect-214/85 translate-y-2 overflow-hidden rounded-tr-xl bg-white/10 transition-transform duration-700 group-hover:translate-y-0 md:mt-10">
+          <NotchTopLeft color="var(--color-brand-deep)" />
+          <PostCover post={post} preload sizes="(min-width: 768px) 75vw, 100vw" />
         </div>
       </div>
     </article>
   );
 }
 
-export function TrendingCard({ posts, title = "Trending News" }: { posts: Post[]; title?: string }) {
+/** Pastel text-only card that sits under the lead story. */
+export function SpotlightCard({ post }: { post: Post }) {
   return (
-    <aside className="rounded-lg border border-line bg-white p-5 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-      <h2 className="text-sm font-medium">{title}</h2>
-      <ol className="mt-5 space-y-6">
-        {posts.map((post) => (
-          <li key={post.slug} className="flex gap-3">
-            <span className="mt-1.5 size-2 shrink-0 bg-brand" aria-hidden="true" />
-            <div className="min-w-0 flex-1">
-              <Link
-                href={`/blogs/${post.slug}`}
-                className="line-clamp-2 text-xs leading-5 font-medium hover:text-brand"
-              >
-                {post.title}
-              </Link>
-              <div className="mt-2 flex justify-between gap-2 text-[10px] text-muted">
-                <time dateTime={post.date}>{formatDate(post.date)}</time>
-                <span>{getWriter(post.writer)?.name}</span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </aside>
+    <article className="group relative flex h-full flex-col rounded-xl bg-brand-soft p-6 text-ink lg:px-8 lg:py-10">
+      <CardLabel label={post.categoryName} meta={readTime(post)} tone="text-brand-ink" />
+      <h3 className="mt-6 mb-6 text-lg leading-snug font-medium tracking-[-0.01em] md:mt-12">
+        <Link href={`/blogs/${post.slug}`} className={stretchedLink}>
+          {post.title}
+        </Link>
+      </h3>
+      <ReadMore className="mt-auto group-hover:text-brand" />
+      <NotchBottomRight />
+    </article>
   );
 }
 
-export function WriterCard({ writer, showCount = false }: { writer: Writer; showCount?: boolean }) {
-  const count = postsByWriter(writer.slug).length;
+export function BlogCard({ post }: { post: Post }) {
   return (
-    <Link href={`/writers/${writer.slug}`} className="group block">
-      <div className="relative aspect-4/5 overflow-hidden rounded-md bg-surface">
-        <Image
-          src={writer.avatar}
-          alt={`Portrait of ${writer.name}`}
-          fill
-          sizes="(min-width: 1024px) 270px, (min-width: 640px) 33vw, 50vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
+    <article className="group relative flex flex-col">
+      <div className="relative mb-5 aspect-312/163 overflow-hidden rounded-md bg-surface">
+        <PostCover
+          post={post}
+          sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
+          className="transition-transform duration-500 group-hover:scale-[1.04]"
         />
       </div>
-      <p className="mt-3 text-sm font-medium group-hover:text-brand">{writer.name}</p>
-      <p className="text-xs text-muted">
-        {writer.role}
-        {showCount && ` · ${count} ${count === 1 ? "article" : "articles"}`}
-      </p>
+      <CardLabel label={post.categoryName} meta={readTime(post)} tone="text-brand-ink" />
+      <h3 className="mt-3 text-lg leading-snug font-medium tracking-[-0.01em] group-hover:text-brand-ink">
+        <Link href={`/blogs/${post.slug}`} className={stretchedLink}>
+          {post.title}
+        </Link>
+      </h3>
+      <time dateTime={post.date} className="mt-2 text-sm text-muted">
+        {formatDate(post.date)}
+      </time>
+    </article>
+  );
+}
+
+export function PostGrid({ posts }: { posts: Post[] }) {
+  return (
+    <ul className="grid gap-y-10 md:grid-cols-2 md:gap-x-6 md:gap-y-13 lg:grid-cols-3">
+      {posts.map((post) => (
+        <li key={post.slug}>
+          <BlogCard post={post} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function WriterCard({ writer }: { writer: Writer }) {
+  return (
+    <Link href={`/writers/${writer.slug}`} className="group block">
+      <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-surface">
+        <span className="text-5xl">
+          <Avatar
+            writer={writer}
+            sizes="(min-width: 1024px) 270px, (min-width: 640px) 33vw, 50vw"
+            className="transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+        </span>
+      </div>
+      <p className="mt-4 text-base font-medium group-hover:text-brand-ink">{writer.name}</p>
+      <p className="text-sm text-muted">{writer.role}</p>
     </Link>
   );
 }
 
 export function PodcastCard({ podcast }: { podcast: Podcast }) {
   return (
-    <article className="group flex flex-col">
-      <Link
-        href={`/podcasts/${podcast.slug}`}
-        className="relative block aspect-4/3 overflow-hidden rounded-md bg-night"
-      >
-        <Image
+    <article className="group relative flex flex-col">
+      <div className="relative mb-5 aspect-312/163 overflow-hidden rounded-md bg-night">
+        <Cover
           src={podcast.image}
           alt={podcast.imageAlt}
-          fill
-          sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
-          className="object-cover opacity-80 transition duration-500 group-hover:scale-105"
+          sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
+          className="opacity-85 transition-transform duration-500 group-hover:scale-[1.04]"
         />
         <span className="absolute inset-0 grid place-items-center">
-          <span className="grid size-14 place-items-center rounded-full border-2 border-white/90 bg-black/30 text-white backdrop-blur-sm">
-            <MicIcon size={22} />
+          <span className="grid size-12 place-items-center rounded-full bg-white/90 text-brand-deep backdrop-blur-sm transition group-hover:bg-white">
+            <MicIcon size={20} />
           </span>
         </span>
-        <span className="absolute right-3 bottom-3 rounded-sm bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-          {podcast.duration}
-        </span>
-      </Link>
-      <h3 className="mt-4 text-[15px] leading-snug font-medium">
-        <Link href={`/podcasts/${podcast.slug}`} className="hover:text-brand">
+      </div>
+      <CardLabel label="Podcast" meta={podcast.duration || undefined} tone="text-brand-ink" />
+      <h3 className="mt-3 text-lg leading-snug font-medium tracking-[-0.01em] group-hover:text-brand-ink">
+        <Link href={`/podcasts/${podcast.slug}`} className={stretchedLink}>
           {podcast.title}
         </Link>
       </h3>
-      <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted">{podcast.description}</p>
-      <Link
-        href={`/podcasts/${podcast.slug}`}
-        className="mt-4 w-fit text-xs font-medium hover:text-brand"
-      >
-        Listen Now
-      </Link>
+      <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted">{podcast.description}</p>
     </article>
   );
 }

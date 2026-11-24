@@ -1,18 +1,19 @@
 export type Category = {
+  /** API id, used to match posts to their category. */
+  id: string;
   slug: string;
   name: string;
   description: string;
-  /** Tailwind classes for the small category tag. */
-  tagClass: string;
 };
 
 export type Writer = {
   slug: string;
   name: string;
   role: string;
-  avatar: string;
-  location: string;
-  joined: string;
+  avatar: string | null;
+  location: string | null;
+  /** ISO date, or null when unknown. */
+  joined: string | null;
   bio: string[];
   beats: string[];
   social: { x?: string; instagram?: string; linkedin?: string };
@@ -25,39 +26,35 @@ export type Block =
   | { type: "list"; items: string[] };
 
 export type Post = {
+  /** The backend id, used for comments, likes and shares. */
+  id: string;
   slug: string;
   title: string;
   excerpt: string;
-  image: string;
+  /** Cover image URL, or null when the post has none. */
+  image: string | null;
   imageAlt: string;
+  /** Category slug ("" when uncategorised) and its display name. */
   category: string;
+  categoryName: string;
+  /** Writer slug ("" when the post has no byline). */
   writer: string;
   date: string;
-  views: number;
-  likes: number;
-  featured?: boolean;
-  trending?: boolean;
+  tags: string[];
   body: Block[];
-};
-
-export type Comment = {
-  id: string;
-  parentId: string | null;
-  author: string;
-  body: string;
-  date: string;
-  likes: number;
 };
 
 export type Podcast = {
   slug: string;
   title: string;
   description: string;
-  image: string;
+  image: string | null;
   imageAlt: string;
+  /** Host's writer slug ("" when there is none). */
   host: string;
   date: string;
   duration: string;
+  audioUrl: string | null;
   topics: string[];
   notes: string[];
 };

@@ -1,51 +1,45 @@
-import { categories, podcasts, posts, writers } from "./data";
+import type { Blog } from "./blog";
 import type { Post } from "./types";
 
-const byNewest = (a: Post, b: Post) => b.date.localeCompare(a.date);
+/** Helpers over the data fetched by getBlog(). */
 
-export const getPost = (slug: string) => posts.find((p) => p.slug === slug);
-export const getWriter = (slug: string) => writers.find((w) => w.slug === slug);
-export const getCategory = (slug: string) =>
-  categories.find((c) => c.slug === slug);
-export const getPodcast = (slug: string) =>
-  podcasts.find((p) => p.slug === slug);
+export const getWriter = (blog: Blog, slug: string) =>
+  slug ? blog.writers.find((w) => w.slug === slug) : undefined;
+export const getPodcast = (blog: Blog, slug: string) => blog.podcasts.find((p) => p.slug === slug);
+export const postsByWriter = (blog: Blog, slug: string) =>
+  blog.posts.filter((p) => p.writer === slug);
+export const podcastsByHost = (blog: Blog, slug: string) =>
+  blog.podcasts.filter((p) => p.host === slug);
 
-export const allPosts = () => [...posts].sort(byNewest);
-export const featuredPosts = () => posts.filter((p) => p.featured);
-export const trendingPosts = () => posts.filter((p) => p.trending);
+export const getPost = (blog: Blog, slug: string) => blog.posts.find((p) => p.slug === slug);
+export const getCategory = (blog: Blog, slug: string) =>
+  blog.categories.find((c) => c.slug === slug);
 
-/** Newest news stories, leaving out the featured hero stories and the design blog. */
-export const latestNews = (count = 4) =>
-  allPosts()
-    .filter((p) => !p.featured && !p.trending && p.category !== "design")
-    .slice(0, count);
+/** The newest stories lead the home page. */
+export const spotlightPosts = (blog: Blog, count = 4) => blog.posts.slice(0, count);
 
-/** Most-read guides from the Design blog. */
-export const popularBlogs = (count = 6) =>
-  posts
-    .filter((p) => p.category === "design")
-    .sort((a, b) => b.views - a.views)
-    .slice(0, count);
+export const postsByCategory = (blog: Blog, slug: string) =>
+  blog.posts.filter((p) => p.category === slug);
 
-export const postsByWriter = (slug: string) =>
-  allPosts().filter((p) => p.writer === slug);
+/** Categories that have at least one post, in API order. */
+export const activeCategories = (blog: Blog) =>
+  blog.categories.filter((c) => blog.posts.some((p) => p.category === c.slug));
 
-export const postsByCategory = (slug: string) =>
-  allPosts().filter((p) => p.category === slug);
-
-/** Categories that have at least one post, in display order. */
-export const activeCategories = () =>
-  categories.filter((c) => posts.some((p) => p.category === c.slug));
-
-export const relatedPosts = (post: Post, count = 3) => {
-  const sameCategory = postsByCategory(post.category).filter(
-    (p) => p.slug !== post.slug,
-  );
-  const others = allPosts().filter(
-    (p) => p.slug !== post.slug && p.category !== post.category,
-  );
-  return [...sameCategory, ...others].slice(0, count);
+export const relatedPosts = (blog: Blog, post: Post, count = 3) => {
+  const others = blog.posts.filter((p) => p.slug !== post.slug);
+  const sameCategory = others.filter((p) => post.category && p.category === post.category);
+  return [...sameCategory, ...others.filter((p) => !sameCategory.includes(p))].slice(0, count);
 };
+
+export type SearchItem = { slug: string; title: string; image: string | null; category: string };
+
+export const searchIndex = (blog: Blog): SearchItem[] =>
+  blog.posts.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    image: p.image,
+    category: p.categoryName,
+  }));
 
 export function readTime(post: Post) {
   const words = post.body
@@ -63,6 +57,16 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
 });
 
 export const formatDate = (iso: string) => dateFormat.format(new Date(iso));
+
+/** "just now", "5m ago", "3h ago", "2d ago", then the date. */
+export function timeAgo(iso: string, now = Date.now()) {
+  const seconds = Math.max(0, (now - new Date(iso).getTime()) / 1000);
+  if (seconds < 45) return "just now";
+  if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))}m ago`;
+  if (seconds < 86_400) return `${Math.round(seconds / 3600)}h ago`;
+  if (seconds < 7 * 86_400) return `${Math.round(seconds / 86_400)}d ago`;
+  return formatDate(iso);
+}
 
 export const formatCount = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : String(n);
