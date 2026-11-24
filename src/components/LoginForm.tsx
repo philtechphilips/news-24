@@ -1,7 +1,8 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useActionState } from "react";
-import { login, type LoginState } from "@/app/login/actions";
+import { login, type LoginState } from "@/lib/auth-actions";
 
 const initialState: LoginState = { error: null, email: "" };
 
@@ -10,9 +11,11 @@ const inputClass =
 
 export default function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
+  const next = useSearchParams().get("next") ?? "";
 
   return (
     <form action={formAction} className="space-y-5">
+      <input type="hidden" name="next" value={next} />
       <div className="space-y-1.5">
         <label htmlFor="email" className="block text-xs font-medium text-ink">
           Email

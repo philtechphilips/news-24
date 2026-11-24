@@ -2,15 +2,14 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
-const SESSION_COOKIE = "news24_token";
+import { API_URL, SESSION_COOKIE } from "./api";
 
 export type LoginState = { error: string | null; email: string };
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const next = safeRedirect(formData.get("next"));
 
   if (!email || !password) {
     return { error: "Enter your email and password.", email };
@@ -22,7 +21,6 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     res = await fetch(`${API_URL}/login`, {
       method: "POST",
       body: new URLSearchParams({ username: email, password }),
-      cache: "no-store",
     });
   } catch {
     return { error: "We can't reach the server right now. Try again shortly.", email };
@@ -45,7 +43,25 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     expires: tokenExpiry(access_token),
   });
 
-  redirect("/");
+  if (next) redirect(next);
+  // Admins land in the dashboard; everyone else goes home.
+  const me = await fetch(`${API_URL}/users/me`, {
+    headers: { Authorization: `Bearer ${access_token}` },
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+  redirect(me?.role === "admin" ? "/admin" : "/");
+}
+
+export async function logout() {
+  (await cookies()).delete(SESSION_COOKIE);
+  redirect("/login");
+}
+
+/** Only same-site paths, so ?next= can't send people to another domain. */
+function safeRedirect(value: FormDataEntryValue | null): string | null {
+  const path = typeof value === "string" ? value : "";
+  return path.startsWith("/") && !path.startsWith("//") ? path : null;
 }
 
 /** The cookie lives exactly as long as the JWT, falling back to 30 minutes. */

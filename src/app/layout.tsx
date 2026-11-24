@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Varela_Round } from "next/font/google";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import { searchIndex } from "@/lib/content";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,13 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${varela.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">
-        <Header searchIndex={searchIndex()} />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <Footer />
-      </body>
+      <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
   );
 }
