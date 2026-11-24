@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { savePost } from "@/app/admin/actions";
-import type { ApiCategory, ApiPost, FormState } from "@/lib/api-types";
+import type { ApiCategory, ApiPost, ApiWriter, FormState } from "@/lib/api-types";
 import { btnPrimary, btnSecondary, Card, inputClass, labelClass } from "./ui";
 
 /** Mirrors the backend's slugify, for the URL preview only. */
@@ -18,9 +18,11 @@ const slugify = (text: string) =>
 export default function PostForm({
   post,
   categories,
+  writers,
 }: {
   post?: ApiPost;
   categories: ApiCategory[];
+  writers: ApiWriter[];
 }) {
   const [state, formAction, pending] = useActionState(savePost, {} as FormState);
   const [values, setValues] = useState({
@@ -29,6 +31,7 @@ export default function PostForm({
     excerpt: post?.excerpt ?? "",
     body: post?.body ?? "",
     category_id: post?.category_id ?? "",
+    writer_id: post?.writer_id ?? "",
     featured_image: post?.featured_image ?? "",
     tags: post?.tags.join(", ") ?? "",
     is_published: post?.is_published ?? false,
@@ -181,6 +184,27 @@ export default function PostForm({
               </p>
             )}
             {error("category_id")}
+          </div>
+
+          <div>
+            <label htmlFor="writer_id" className={labelClass}>
+              Writer
+            </label>
+            <select
+              id="writer_id"
+              name="writer_id"
+              value={values.writer_id}
+              onChange={set("writer_id")}
+              className={inputClass}
+            >
+              <option value="">No byline</option>
+              {writers.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+            {error("writer_id")}
           </div>
 
           <div>

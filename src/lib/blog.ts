@@ -1,33 +1,48 @@
 import { cacheLife, cacheTag } from "next/cache";
-import type { ApiCategory, ApiPost } from "./api-types";
+import type { ApiCategory, ApiPodcast, ApiPost, ApiWriter } from "./api-types";
 import { API_URL } from "./config";
 import { categoryDescriptions } from "./data";
-import type { Block, Category, Post } from "./types";
+import type { Block, Category, Podcast, Post, Writer } from "./types";
 
 /** Cache tag for everything the public site reads. Admin actions expire it on save. */
 export const BLOG_TAG = "blog";
 
-export type Blog = { posts: Post[]; categories: Category[] };
+export type Blog = {
+  posts: Post[];
+  categories: Category[];
+  writers: Writer[];
+  podcasts: Podcast[];
+};
 
 /**
- * Published posts (newest first) and categories from the API, shaped for the
+ * Everything the public site shows, from the API: published posts (newest
+ * first), categories, staff writers and published podcasts, shaped for the
  * site's components. Cached and shared by every page; it's small, so one fetch
- * of up to 100 posts covers lists, pagination, search and article pages.
+ * of up to 100 of each covers lists, pagination, search and detail pages.
  */
 export async function getBlog(): Promise<Blog> {
   "use cache";
   cacheTag(BLOG_TAG);
   cacheLife("minutes");
 
-  const [apiPosts, apiCategories] = await Promise.all([
+  const [apiPosts, apiCategories, apiWriters, apiPodcasts] = await Promise.all([
     fetchJson<ApiPost[]>("/posts/?limit=100"),
     fetchJson<ApiCategory[]>("/categories/?limit=100"),
+    fetchJson<ApiWriter[]>("/writers/?limit=100"),
+    fetchJson<ApiPodcast[]>("/podcasts/?limit=100"),
   ]);
   const categories = apiCategories.map(toCategory);
-  const byId = new Map(apiCategories.map((c, i) => [c.id, categories[i]]));
+  const categoryById = new Map(apiCategories.map((c, i) => [c.id, categories[i]]));
+  const writers = apiWriters.map(toWriter);
+  const writerSlug = new Map(apiWriters.map((w) => [w.id, w.slug]));
+  const slugOf = (id: string | null) => (id && writerSlug.get(id)) || "";
   return {
-    posts: apiPosts.map((post) => toPost(post, byId.get(post.category_id ?? ""))),
+    posts: apiPosts.map((post) =>
+      toPost(post, categoryById.get(post.category_id ?? ""), slugOf(post.writer_id)),
+    ),
     categories,
+    writers,
+    podcasts: apiPodcasts.map((podcast) => toPodcast(podcast, slugOf(podcast.host_id))),
   };
 }
 
@@ -54,7 +69,42 @@ function toCategory(category: ApiCategory): Category {
   };
 }
 
-function toPost(post: ApiPost, category: Category | undefined): Post {
+function toWriter(writer: ApiWriter): Writer {
+  return {
+    slug: writer.slug,
+    name: writer.name,
+    role: writer.role,
+    avatar: writer.avatar,
+    location: writer.location,
+    joined: writer.joined,
+    bio: writer.bio,
+    beats: writer.beats,
+    social: writer.social,
+  };
+}
+
+function toPodcast(podcast: ApiPodcast, host: string): Podcast {
+  const minutes = podcast.duration_minutes;
+  return {
+    slug: podcast.slug,
+    title: podcast.title,
+    description: podcast.description,
+    image: podcast.cover_image,
+    imageAlt: podcast.title,
+    host,
+    date: podcast.created_at,
+    duration: !minutes
+      ? ""
+      : minutes < 60
+        ? `${minutes} min`
+        : `${Math.floor(minutes / 60)} h ${minutes % 60} min`.replace(" 0 min", ""),
+    audioUrl: podcast.audio_url,
+    topics: podcast.topics,
+    notes: podcast.notes,
+  };
+}
+
+function toPost(post: ApiPost, category: Category | undefined, writer: string): Post {
   const body = parseBody(post.body);
   const firstParagraph = body.find((b) => b.type === "p")?.text ?? "";
   return {
@@ -65,6 +115,7 @@ function toPost(post: ApiPost, category: Category | undefined): Post {
     imageAlt: post.title,
     category: category?.slug ?? "",
     categoryName: category?.name ?? "Story",
+    writer,
     date: post.created_at,
     tags: post.tags,
     body,

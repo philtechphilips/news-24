@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { PageIntro, PodcastCard } from "@/components/cards";
-import { podcasts } from "@/lib/data";
+import { getBlog } from "@/lib/blog";
 
 export const metadata: Metadata = {
   title: "Podcasts",
   description: "Conversations on blogging, design, journalism and technology.",
 };
 
-export default function PodcastsPage() {
+export default async function PodcastsPage() {
+  const { podcasts } = await getBlog();
   return (
     <div className="page-shell pb-24 md:pb-32">
       <PageIntro

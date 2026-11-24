@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogCard, CategoryTag, PostCover, SectionHeader } from "@/components/cards";
+import { Avatar, BlogCard, CategoryTag, PostCover, SectionHeader } from "@/components/cards";
 import Comments from "@/components/Comments";
 import PostActions from "@/components/PostActions";
 import { getBlog } from "@/lib/blog";
-import { formatDate, getPost, readTime, relatedPosts } from "@/lib/content";
+import { formatDate, getPost, getWriter, readTime, relatedPosts } from "@/lib/content";
 import { seedComments } from "@/lib/data";
 import type { Block } from "@/lib/types";
 
@@ -36,6 +36,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
   const post = getPost(blog, (await params).slug);
   if (!post) notFound();
 
+  const writer = getWriter(blog, post.writer);
   const comments = seedComments[post.slug] ?? [];
 
   return (
@@ -68,7 +69,20 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
         <p className="mt-5 text-base leading-7 text-muted md:text-lg">{post.excerpt}</p>
 
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 border-y border-line py-4">
-          <dl className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted">
+          {writer && (
+            <Link href={`/writers/${writer.slug}`} className="group flex items-center gap-3">
+              <span className="relative size-10 overflow-hidden rounded-full bg-surface text-xs">
+                <Avatar writer={writer} sizes="40px" />
+              </span>
+              <span>
+                <span className="block text-sm font-medium group-hover:text-brand">
+                  {writer.name}
+                </span>
+                <span className="block text-xs text-muted">{writer.role}</span>
+              </span>
+            </Link>
+          )}
+          <dl className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted sm:ml-auto">
             <div>
               <dt className="sr-only">Published</dt>
               <dd>
@@ -104,6 +118,33 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
             seedCommentCount={comments.length}
           />
         </div>
+
+        {writer && (
+          <aside className="mt-10 flex flex-col gap-5 rounded-xl bg-surface p-6 sm:flex-row">
+            <Link
+              href={`/writers/${writer.slug}`}
+              className="relative size-20 shrink-0 overflow-hidden rounded-full bg-white text-2xl"
+            >
+              <Avatar writer={writer} sizes="80px" />
+            </Link>
+            <div>
+              <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+                Written by
+              </p>
+              <p className="mt-1 text-lg font-medium">{writer.name}</p>
+              <p className="text-xs text-muted">{writer.role}</p>
+              {writer.bio[0] && (
+                <p className="mt-3 text-sm leading-6 text-neutral-700">{writer.bio[0]}</p>
+              )}
+              <Link
+                href={`/writers/${writer.slug}`}
+                className="mt-4 inline-block text-xs font-medium text-brand hover:underline"
+              >
+                More from {writer.name.split(" ")[0]} →
+              </Link>
+            </div>
+          </aside>
+        )}
 
         <div className="mt-16">
           <Comments slug={post.slug} seed={comments} />

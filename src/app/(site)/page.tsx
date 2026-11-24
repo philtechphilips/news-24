@@ -10,7 +10,6 @@ import {
 } from "@/components/cards";
 import { getBlog } from "@/lib/blog";
 import { spotlightPosts } from "@/lib/content";
-import { podcasts, writers } from "@/lib/data";
 
 export default async function Home() {
   const blog = await getBlog();
@@ -58,7 +57,7 @@ export default async function Home() {
         <section>
           <SectionHeader title="Latest Podcasts" href="/podcasts" />
           <ul className="grid gap-y-10 md:grid-cols-2 md:gap-x-6 lg:grid-cols-3">
-            {podcasts.slice(0, 3).map((podcast) => (
+            {blog.podcasts.slice(0, 3).map((podcast) => (
               <li key={podcast.slug}>
                 <PodcastCard podcast={podcast} />
               </li>
@@ -69,7 +68,7 @@ export default async function Home() {
         <section>
           <SectionHeader title="Staff Writers" href="/writers" />
           <ul className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
-            {writers.slice(0, 4).map((writer) => (
+            {blog.writers.slice(0, 4).map((writer) => (
               <li key={writer.slug}>
                 <WriterCard writer={writer} />
               </li>

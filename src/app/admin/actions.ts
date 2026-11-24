@@ -37,6 +37,7 @@ export async function savePost(_prev: FormState, formData: FormData): Promise<Fo
     excerpt: text(formData, "excerpt") || null,
     featured_image: text(formData, "featured_image") || null,
     category_id: text(formData, "category_id") || null,
+    writer_id: text(formData, "writer_id") || null,
     tags: text(formData, "tags")
       .split(",")
       .map((tag) => tag.trim())

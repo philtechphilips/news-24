@@ -3,7 +3,6 @@ import Link from "next/link";
 import { PageIntro, SectionHeader, WriterCard } from "@/components/cards";
 import { getBlog } from "@/lib/blog";
 import { activeCategories } from "@/lib/content";
-import { podcasts, writers } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "About",
@@ -14,9 +13,9 @@ export default async function AboutPage() {
   const blog = await getBlog();
   const stats = [
     { label: "Stories published", value: blog.posts.length },
-    { label: "Staff writers", value: writers.length },
+    { label: "Staff writers", value: blog.writers.length },
     { label: "Topics covered", value: activeCategories(blog).length },
-    { label: "Podcast episodes", value: podcasts.length },
+    { label: "Podcast episodes", value: blog.podcasts.length },
   ];
 
   return (
@@ -61,7 +60,7 @@ export default async function AboutPage() {
       <section className="mt-20">
         <SectionHeader title="Meet the team" href="/writers" />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {writers.slice(0, 4).map((writer) => (
+          {blog.writers.slice(0, 4).map((writer) => (
             <WriterCard key={writer.slug} writer={writer} />
           ))}
         </div>

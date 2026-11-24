@@ -8,9 +8,10 @@ export type Writer = {
   slug: string;
   name: string;
   role: string;
-  avatar: string;
-  location: string;
-  joined: string;
+  avatar: string | null;
+  location: string | null;
+  /** ISO date, or null when unknown. */
+  joined: string | null;
   bio: string[];
   beats: string[];
   social: { x?: string; instagram?: string; linkedin?: string };
@@ -32,6 +33,8 @@ export type Post = {
   /** Category slug ("" when uncategorised) and its display name. */
   category: string;
   categoryName: string;
+  /** Writer slug ("" when the post has no byline). */
+  writer: string;
   date: string;
   tags: string[];
   body: Block[];
@@ -50,11 +53,13 @@ export type Podcast = {
   slug: string;
   title: string;
   description: string;
-  image: string;
+  image: string | null;
   imageAlt: string;
+  /** Host's writer slug ("" when there is none). */
   host: string;
   date: string;
   duration: string;
+  audioUrl: string | null;
   topics: string[];
   notes: string[];
 };

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import PostForm from "@/components/admin/PostForm";
 import { formatDate, PageHeader, StatusPill } from "@/components/admin/ui";
 import { api, ApiError } from "@/lib/api";
-import type { ApiCategory, ApiPost } from "@/lib/api-types";
+import type { ApiCategory, ApiPost, ApiWriter } from "@/lib/api-types";
 
 export const metadata: Metadata = { title: "Edit post" };
 
@@ -19,9 +19,10 @@ async function getPost(id: string) {
 
 export default async function EditPostPage({ params }: PageProps<"/admin/posts/[id]">) {
   const { id } = await params;
-  const [post, categories] = await Promise.all([
+  const [post, categories, writers] = await Promise.all([
     getPost(id),
     api<ApiCategory[]>("/categories/?limit=100"),
+    api<ApiWriter[]>("/writers/?limit=100"),
   ]);
 
   return (
@@ -31,7 +32,7 @@ export default async function EditPostPage({ params }: PageProps<"/admin/posts/[
         description={`Created ${formatDate(post.created_at)} · Last updated ${formatDate(post.updated_at)}`}
         actions={<StatusPill published={post.is_published} />}
       />
-      <PostForm post={post} categories={categories} />
+      <PostForm post={post} categories={categories} writers={writers} />
     </>
   );
 }

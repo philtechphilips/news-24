@@ -1,11 +1,15 @@
 import type { Blog } from "./blog";
-import { podcasts, writers } from "./data";
 import type { Post } from "./types";
 
-/** Helpers over the posts and categories fetched by getBlog(), plus the static writers and podcasts. */
+/** Helpers over the data fetched by getBlog(). */
 
-export const getWriter = (slug: string) => writers.find((w) => w.slug === slug);
-export const getPodcast = (slug: string) => podcasts.find((p) => p.slug === slug);
+export const getWriter = (blog: Blog, slug: string) =>
+  slug ? blog.writers.find((w) => w.slug === slug) : undefined;
+export const getPodcast = (blog: Blog, slug: string) => blog.podcasts.find((p) => p.slug === slug);
+export const postsByWriter = (blog: Blog, slug: string) =>
+  blog.posts.filter((p) => p.writer === slug);
+export const podcastsByHost = (blog: Blog, slug: string) =>
+  blog.podcasts.filter((p) => p.host === slug);
 
 export const getPost = (blog: Blog, slug: string) => blog.posts.find((p) => p.slug === slug);
 export const getCategory = (blog: Blog, slug: string) =>

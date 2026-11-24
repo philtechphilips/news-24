@@ -28,34 +28,80 @@ export function CategoryTag({
 /** Only Unsplash is configured for next/image; other hosts load as-is. */
 const optimizable = (src: string) => src.startsWith("https://images.unsplash.com/photo-");
 
-/** A post's cover filling its (relative) parent, or the site mark when it has none. */
-export function PostCover({
-  post,
+/**
+ * An image filling its (relative) parent. Without a src it shows `fallback`,
+ * or the site mark on pastel.
+ */
+export function Cover({
+  src,
+  alt,
   sizes,
   preload = false,
   className = "",
+  fallback,
 }: {
-  post: Post;
+  src: string | null;
+  alt: string;
   sizes: string;
   preload?: boolean;
   className?: string;
+  fallback?: React.ReactNode;
 }) {
-  if (!post.image) {
+  if (!src) {
     return (
-      <span className="absolute inset-0 grid place-items-center bg-brand-soft" aria-hidden="true">
-        <SiteMark size={56} className="rounded-xl opacity-90" />
+      <span
+        className="absolute inset-0 grid place-items-center bg-brand-soft text-brand-ink"
+        aria-hidden="true"
+      >
+        {fallback ?? <SiteMark size={56} className="rounded-xl opacity-90" />}
       </span>
     );
   }
   return (
     <Image
-      src={post.image}
-      alt={post.imageAlt}
+      src={src}
+      alt={alt}
       fill
       preload={preload}
       sizes={sizes}
-      unoptimized={!optimizable(post.image)}
+      unoptimized={!optimizable(src)}
       className={`object-cover ${className}`}
+    />
+  );
+}
+
+export function PostCover({
+  post,
+  ...props
+}: { post: Post } & Omit<Parameters<typeof Cover>[0], "src" | "alt">) {
+  return <Cover src={post.image} alt={post.imageAlt} {...props} />;
+}
+
+/** A writer's photo, or their initials when they have none. */
+export function Avatar({
+  writer,
+  sizes,
+  preload,
+  className,
+}: {
+  writer: Writer;
+  sizes: string;
+  preload?: boolean;
+  className?: string;
+}) {
+  const initials = writer.name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("");
+  return (
+    <Cover
+      src={writer.avatar}
+      alt={`Portrait of ${writer.name}`}
+      sizes={sizes}
+      preload={preload}
+      className={className}
+      fallback={<span className="font-display text-[length:inherit] uppercase">{initials}</span>}
     />
   );
 }
@@ -251,13 +297,13 @@ export function WriterCard({ writer }: { writer: Writer }) {
   return (
     <Link href={`/writers/${writer.slug}`} className="group block">
       <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-surface">
-        <Image
-          src={writer.avatar}
-          alt={`Portrait of ${writer.name}`}
-          fill
-          sizes="(min-width: 1024px) 270px, (min-width: 640px) 33vw, 50vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-        />
+        <span className="text-5xl">
+          <Avatar
+            writer={writer}
+            sizes="(min-width: 1024px) 270px, (min-width: 640px) 33vw, 50vw"
+            className="transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+        </span>
       </div>
       <p className="mt-4 text-base font-medium group-hover:text-brand-ink">{writer.name}</p>
       <p className="text-sm text-muted">{writer.role}</p>
@@ -269,12 +315,11 @@ export function PodcastCard({ podcast }: { podcast: Podcast }) {
   return (
     <article className="group relative flex flex-col">
       <div className="relative mb-5 aspect-312/163 overflow-hidden rounded-md bg-night">
-        <Image
+        <Cover
           src={podcast.image}
           alt={podcast.imageAlt}
-          fill
           sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
-          className="object-cover opacity-85 transition-transform duration-500 group-hover:scale-[1.04]"
+          className="opacity-85 transition-transform duration-500 group-hover:scale-[1.04]"
         />
         <span className="absolute inset-0 grid place-items-center">
           <span className="grid size-12 place-items-center rounded-full bg-white/90 text-brand-deep backdrop-blur-sm transition group-hover:bg-white">
@@ -282,7 +327,7 @@ export function PodcastCard({ podcast }: { podcast: Podcast }) {
           </span>
         </span>
       </div>
-      <CardLabel label="Podcast" meta={podcast.duration} tone="text-brand-ink" />
+      <CardLabel label="Podcast" meta={podcast.duration || undefined} tone="text-brand-ink" />
       <h3 className="mt-3 text-lg leading-snug font-medium tracking-[-0.01em] group-hover:text-brand-ink">
         <Link href={`/podcasts/${podcast.slug}`} className={stretchedLink}>
           {podcast.title}
