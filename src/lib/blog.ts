@@ -62,6 +62,7 @@ export const slugify = (text: string) =>
 
 function toCategory(category: ApiCategory): Category {
   return {
+    id: category.id,
     slug: slugify(category.name),
     name: category.name,
     description:

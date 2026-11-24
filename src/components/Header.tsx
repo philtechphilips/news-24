@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { SearchItem } from "@/lib/content";
+import { usePostSearch } from "@/lib/use-post-search";
 import { CloseIcon, MenuIcon, SearchIcon } from "./icons";
 
 const nav = [
@@ -14,7 +15,8 @@ const nav = [
   { href: "/about", label: "About" },
 ];
 
-export default function Header({ searchIndex }: { searchIndex: SearchItem[] }) {
+/** `latest` is shown in the search dialog before anything is typed. */
+export default function Header({ latest }: { latest: SearchItem[] }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -144,17 +146,17 @@ export default function Header({ searchIndex }: { searchIndex: SearchItem[] }) {
       )}
 
       {searchOpen && (
-        <SearchDialog items={searchIndex} onClose={() => setSearchOpen(false)} />
+        <SearchDialog latest={latest} onClose={() => setSearchOpen(false)} />
       )}
     </header>
   );
 }
 
 function SearchDialog({
-  items,
+  latest,
   onClose,
 }: {
-  items: SearchItem[];
+  latest: SearchItem[];
   onClose: () => void;
 }) {
   const [query, setQuery] = useState("");
@@ -171,13 +173,9 @@ function SearchDialog({
     };
   }, [onClose]);
 
-  const q = query.trim().toLowerCase();
-  const results = q
-    ? items.filter(
-        (i) =>
-          i.title.toLowerCase().includes(q) || i.category.toLowerCase().includes(q),
-      )
-    : items.slice(0, 5);
+  const q = query.trim();
+  const { items: found, status } = usePostSearch(query);
+  const results = q ? found : latest;
 
   return (
     <div
@@ -208,7 +206,13 @@ function SearchDialog({
             ESC
           </button>
         </div>
-        <ul className="max-h-[60vh] overflow-y-auto p-2">
+        <ul
+          aria-live="polite"
+          aria-busy={status === "loading"}
+          className={`max-h-[60vh] overflow-y-auto p-2 transition-opacity ${
+            status === "loading" && results.length > 0 ? "opacity-60" : ""
+          }`}
+        >
           {!q && (
             <li className="px-3 pt-2 pb-1 text-xs font-medium text-muted">Latest</li>
           )}
@@ -240,7 +244,13 @@ function SearchDialog({
           ))}
           {results.length === 0 && (
             <li className="px-3 py-8 text-center text-sm text-muted">
-              No articles match “{query}”.
+              {!q
+                ? "No stories yet."
+                : status === "loading"
+                  ? "Searching…"
+                  : status === "error"
+                    ? "Search isn't available right now."
+                    : `No articles match “${q}”.`}
             </li>
           )}
         </ul>

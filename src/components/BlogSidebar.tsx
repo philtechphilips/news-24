@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
-import type { SearchItem } from "@/lib/content";
+import { usePostSearch } from "@/lib/use-post-search";
 import { ChevronDownIcon, SearchIcon } from "./icons";
 import { socials } from "./socials";
 
@@ -13,13 +13,11 @@ export default function BlogSidebar({
   description,
   topics,
   activeTopic,
-  searchIndex,
 }: {
   title: string;
   description: string;
   topics: Topic[];
   activeTopic?: string;
-  searchIndex: SearchItem[];
 }) {
   const [query, setQuery] = useState("");
   // null until toggled: CSS keeps topics collapsed on phones and open from md up.
@@ -29,14 +27,8 @@ export default function BlogSidebar({
   const searchId = useId();
   const topicsId = useId();
 
-  const q = query.trim().toLowerCase();
-  const results = q
-    ? searchIndex
-        .filter(
-          (i) => i.title.toLowerCase().includes(q) || i.category.toLowerCase().includes(q),
-        )
-        .slice(0, 6)
-    : [];
+  const q = query.trim();
+  const { items: results, status } = usePostSearch(query);
 
   return (
     <aside className="md:sticky md:top-28 md:max-w-68">
@@ -67,7 +59,13 @@ export default function BlogSidebar({
         </p>
 
         {q && (
-          <ul aria-live="polite" className="mt-2 overflow-hidden rounded-lg border border-ink/10 bg-white">
+          <ul
+            aria-live="polite"
+            aria-busy={status === "loading"}
+            className={`mt-2 overflow-hidden rounded-lg border border-ink/10 bg-white transition-opacity ${
+              status === "loading" && results.length > 0 ? "opacity-60" : ""
+            }`}
+          >
             {results.map((item) => (
               <li key={item.slug} className="border-b border-ink/5 last:border-0">
                 <Link href={`/blogs/${item.slug}`} className="block px-4 py-3 hover:bg-surface">
@@ -77,7 +75,13 @@ export default function BlogSidebar({
               </li>
             ))}
             {results.length === 0 && (
-              <li className="px-4 py-4 text-sm text-muted">No stories match “{query.trim()}”.</li>
+              <li className="px-4 py-4 text-sm text-muted">
+                {status === "loading"
+                  ? "Searching…"
+                  : status === "error"
+                    ? "Search isn't available right now."
+                    : `No stories match “${q}”.`}
+              </li>
             )}
           </ul>
         )}

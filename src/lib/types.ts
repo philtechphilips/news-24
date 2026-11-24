@@ -1,4 +1,6 @@
 export type Category = {
+  /** API id, used to match posts to their category. */
+  id: string;
   slug: string;
   name: string;
   description: string;

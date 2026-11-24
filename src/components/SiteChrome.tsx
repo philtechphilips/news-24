@@ -5,13 +5,14 @@ import Header from "./Header";
 
 /** Public site chrome: sticky header and the subscribe footer. */
 export default async function SiteChrome({ children }: { children: React.ReactNode }) {
-  // If the API is down, the header still renders; search just has nothing to find.
-  const index = await getBlog()
-    .then(searchIndex)
+  // The five newest stories the search dialog shows before anything is typed.
+  // If the API is down the header still renders, just without them.
+  const latest = await getBlog()
+    .then((blog) => searchIndex(blog).slice(0, 5))
     .catch(() => []);
   return (
     <>
-      <Header searchIndex={index} />
+      <Header latest={latest} />
       <main id="main-content" className="flex-1">
         {children}
       </main>

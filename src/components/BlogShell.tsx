@@ -1,5 +1,5 @@
 import { getBlog } from "@/lib/blog";
-import { activeCategories, searchIndex } from "@/lib/content";
+import { activeCategories } from "@/lib/content";
 import BlogSidebar from "./BlogSidebar";
 
 /** Sticky sidebar (title, search, topics) beside a three-column main area. */
@@ -23,7 +23,6 @@ export default async function BlogShell({
           description={description}
           activeTopic={activeTopic}
           topics={activeCategories(blog).map(({ slug, name }) => ({ slug, name }))}
-          searchIndex={searchIndex(blog)}
         />
       </div>
       <div className="min-w-0 md:col-span-3">{children}</div>

@@ -1,6 +1,6 @@
 import type { Category, Comment } from "./types";
 
-const sampleCategories: Category[] = [
+const sampleCategories: Omit<Category, "id">[] = [
   {
     slug: "economy",
     name: "Economy",
