@@ -6,8 +6,8 @@ import Comments from "@/components/Comments";
 import PostActions from "@/components/PostActions";
 import { getBlog } from "@/lib/blog";
 import { formatDate, getPost, getWriter, readTime, relatedPosts } from "@/lib/content";
-import { seedComments } from "@/lib/data";
 import type { Block } from "@/lib/types";
+import { LivePostProvider } from "@/lib/use-live-post";
 
 export async function generateStaticParams() {
   const { posts } = await getBlog();
@@ -37,7 +37,6 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
   if (!post) notFound();
 
   const writer = getWriter(blog, post.writer);
-  const comments = seedComments[post.slug] ?? [];
 
   return (
     <article>
@@ -110,45 +109,43 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
           ))}
         </div>
 
-        <div className="mt-12 border-y border-line py-6">
-          <PostActions
-            slug={post.slug}
-            title={post.title}
-            baseLikes={0}
-            seedCommentCount={comments.length}
-          />
-        </div>
+        {/* Likes, shares and comments load in the browser and update live. */}
+        <LivePostProvider postId={post.id}>
+          <div className="mt-12 border-y border-line py-6">
+            <PostActions title={post.title} />
+          </div>
 
-        {writer && (
-          <aside className="mt-10 flex flex-col gap-5 rounded-xl bg-surface p-6 sm:flex-row">
-            <Link
-              href={`/writers/${writer.slug}`}
-              className="relative size-20 shrink-0 overflow-hidden rounded-full bg-white text-2xl"
-            >
-              <Avatar writer={writer} sizes="80px" />
-            </Link>
-            <div>
-              <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
-                Written by
-              </p>
-              <p className="mt-1 text-lg font-medium">{writer.name}</p>
-              <p className="text-xs text-muted">{writer.role}</p>
-              {writer.bio[0] && (
-                <p className="mt-3 text-sm leading-6 text-neutral-700">{writer.bio[0]}</p>
-              )}
+          {writer && (
+            <aside className="mt-10 flex flex-col gap-5 rounded-xl bg-surface p-6 sm:flex-row">
               <Link
                 href={`/writers/${writer.slug}`}
-                className="mt-4 inline-block text-xs font-medium text-brand hover:underline"
+                className="relative size-20 shrink-0 overflow-hidden rounded-full bg-white text-2xl"
               >
-                More from {writer.name.split(" ")[0]} →
+                <Avatar writer={writer} sizes="80px" />
               </Link>
-            </div>
-          </aside>
-        )}
+              <div>
+                <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+                  Written by
+                </p>
+                <p className="mt-1 text-lg font-medium">{writer.name}</p>
+                <p className="text-xs text-muted">{writer.role}</p>
+                {writer.bio[0] && (
+                  <p className="mt-3 text-sm leading-6 text-neutral-700">{writer.bio[0]}</p>
+                )}
+                <Link
+                  href={`/writers/${writer.slug}`}
+                  className="mt-4 inline-block text-xs font-medium text-brand hover:underline"
+                >
+                  More from {writer.name.split(" ")[0]} →
+                </Link>
+              </div>
+            </aside>
+          )}
 
-        <div className="mt-16">
-          <Comments slug={post.slug} seed={comments} />
-        </div>
+          <div className="mt-16">
+            <Comments />
+          </div>
+        </LivePostProvider>
       </div>
 
       <section className="page-shell mt-24 pb-24 md:pb-32">

@@ -151,6 +151,7 @@ function toPost(post: ApiPost, category: Category | undefined, writer: string): 
   const body = parseBody(post.body);
   const firstParagraph = body.find((b) => b.type === "p")?.text ?? "";
   return {
+    id: post.id,
     slug: post.slug,
     title: post.title,
     excerpt: post.excerpt || firstParagraph.slice(0, 200),

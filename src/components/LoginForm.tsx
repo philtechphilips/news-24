@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useActionState } from "react";
 import { login, type LoginState } from "@/lib/auth-actions";
@@ -12,6 +13,7 @@ const inputClass =
 export default function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
   const next = useSearchParams().get("next") ?? "";
+  const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : "/signup";
 
   return (
     <form action={formAction} className="space-y-5">
@@ -63,6 +65,13 @@ export default function LoginForm() {
       >
         {pending ? "Signing in…" : "Log in"}
       </button>
+
+      <p className="text-center text-sm text-muted">
+        New to News 24?{" "}
+        <Link href={signupHref} className="font-medium text-ink underline-offset-2 hover:underline">
+          Create an account
+        </Link>
+      </p>
     </form>
   );
 }

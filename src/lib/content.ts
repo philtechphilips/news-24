@@ -58,5 +58,15 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
 
 export const formatDate = (iso: string) => dateFormat.format(new Date(iso));
 
+/** "just now", "5m ago", "3h ago", "2d ago", then the date. */
+export function timeAgo(iso: string, now = Date.now()) {
+  const seconds = Math.max(0, (now - new Date(iso).getTime()) / 1000);
+  if (seconds < 45) return "just now";
+  if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))}m ago`;
+  if (seconds < 86_400) return `${Math.round(seconds / 3600)}h ago`;
+  if (seconds < 7 * 86_400) return `${Math.round(seconds / 86_400)}d ago`;
+  return formatDate(iso);
+}
+
 export const formatCount = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : String(n);

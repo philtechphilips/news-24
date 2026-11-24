@@ -1,70 +1,44 @@
 "use client";
 
-import { useState } from "react";
 import { formatCount } from "@/lib/content";
-import { togglePostLike, useEngagement } from "@/lib/engagement";
-import { CommentIcon, HeartIcon, ShareIcon } from "./icons";
+import { useLivePost } from "@/lib/use-live-post";
+import { CommentIcon, HeartIcon } from "./icons";
+import ShareMenu from "./ShareMenu";
 
-export default function PostActions({
-  slug,
-  title,
-  baseLikes,
-  seedCommentCount,
-}: {
-  slug: string;
-  title: string;
-  baseLikes: number;
-  seedCommentCount: number;
-}) {
-  const { likedPosts, comments } = useEngagement();
-  const [shareLabel, setShareLabel] = useState("Share");
-  const liked = likedPosts.includes(slug);
-  const commentCount =
-    seedCommentCount + comments.filter((c) => c.postSlug === slug).length;
-
-  const share = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url });
-        return;
-      }
-      await navigator.clipboard.writeText(url);
-      setShareLabel("Link copied");
-    } catch {
-      setShareLabel("Couldn't share");
-    }
-    setTimeout(() => setShareLabel("Share"), 2000);
-  };
+/** Like, comment and share counts for the article, updated live. */
+export default function PostActions({ title }: { title: string }) {
+  const live = useLivePost();
+  const { loaded, liked, stats, viewer } = live;
+  const count = (n: number) => (loaded ? formatCount(n) : "–");
 
   const button =
-    "flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium transition";
+    "flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium tabular-nums transition";
 
   return (
     <div className="flex flex-wrap items-center gap-3">
       <button
         type="button"
-        onClick={() => togglePostLike(slug)}
+        onClick={live.togglePostLike}
+        disabled={!loaded}
         aria-pressed={liked}
-        className={`${button} ${
+        className={`${button} disabled:opacity-60 ${
           liked
             ? "border-brand bg-brand-soft text-brand"
             : "border-line hover:border-brand hover:text-brand"
         }`}
       >
         <HeartIcon filled={liked} size={17} />
-        {formatCount(baseLikes + (liked ? 1 : 0))}
-        <span className="sr-only">{liked ? "Unlike this article" : "Like this article"}</span>
+        {count(stats.likes)}
+        <span className="sr-only">
+          {!viewer ? "likes. Log in to like this article" : liked ? "likes. Unlike" : "likes. Like this article"}
+        </span>
       </button>
       <a href="#comments" className={`${button} border-line hover:border-ink`}>
         <CommentIcon size={17} />
-        {commentCount}
+        {count(live.comments.length)}
         <span className="sr-only">comments</span>
       </a>
-      <button type="button" onClick={share} className={`${button} border-line hover:border-ink`}>
-        <ShareIcon size={16} />
-        <span aria-live="polite">{shareLabel}</span>
-      </button>
+      <ShareMenu title={title} shares={stats.shares} loaded={loaded} onShare={live.recordShare} />
     </div>
   );
 }

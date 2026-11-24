@@ -50,7 +50,7 @@ export async function api<T>(
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
-async function toApiError(res: Response): Promise<ApiError> {
+export async function toApiError(res: Response): Promise<ApiError> {
   const detail = (await res.json().catch(() => null))?.detail;
   if (Array.isArray(detail)) {
     // FastAPI validation errors: [{ loc: ["body", "title"], msg: "..." }, ...]
@@ -67,6 +67,11 @@ async function toApiError(res: Response): Promise<ApiError> {
     typeof detail === "string" ? detail : `Request failed (${res.status})`,
   );
 }
+
+/** True for the UUIDs the backend uses as ids, so ids from the browser can't
+ * change the shape of an API path. */
+export const isUuid = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 /** The logged-in user, or null when signed out. Fetched once per request. */
 export const getCurrentUser = cache(async (): Promise<ApiUser | null> => {

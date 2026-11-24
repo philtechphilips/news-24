@@ -5,6 +5,8 @@ export type Role = "user" | "admin";
 export type ApiUser = {
   id: string;
   email: string;
+  /** Shown on their comments; null until they set one. */
+  name: string | null;
   role: Role;
   created_at: string;
 };
@@ -58,6 +60,36 @@ export type ApiPodcast = {
   host_id: string | null;
   created_at: string;
 };
+
+export type ApiComment = {
+  id: string;
+  post_id: string;
+  /** Set on replies. */
+  parent_id: string | null;
+  body: string;
+  created_at: string;
+  author: { id: string; name: string };
+  likes: number;
+};
+
+export type ApiPostStats = { likes: number; comments: number; shares: number };
+
+/** GET /posts/{id}/engagement */
+export type ApiEngagement = {
+  stats: ApiPostStats;
+  /** Oldest first. */
+  comments: ApiComment[];
+  liked: boolean;
+  liked_comments: string[];
+};
+
+export type ApiLikeResult = { liked: boolean; likes: number };
+
+/** Who is reading, as far as the comments section needs to know. */
+export type Viewer = { id: string; name: string | null; isAdmin: boolean };
+
+/** GET /api/posts/{id}/engagement: the backend's engagement plus the viewer. */
+export type EngagementSnapshot = ApiEngagement & { viewer: Viewer | null };
 
 /** What a form action returns: a banner message and/or per-field messages. */
 export type FormState = {

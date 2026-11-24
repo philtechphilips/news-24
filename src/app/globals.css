@@ -41,3 +41,21 @@ body {
   background: var(--color-brand);
   color: #ffffff;
 }
+
+/* A comment someone else just posted: a brief highlight as it appears. */
+@media (prefers-reduced-motion: no-preference) {
+  .comment-arrived {
+    animation: comment-arrived 2.4s ease-out;
+  }
+}
+
+@keyframes comment-arrived {
+  from {
+    background-color: var(--color-brand-soft);
+    box-shadow: 0 0 0 8px var(--color-brand-soft);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 8px transparent;
+  }
+}

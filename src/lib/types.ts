@@ -26,6 +26,8 @@ export type Block =
   | { type: "list"; items: string[] };
 
 export type Post = {
+  /** The backend id, used for comments, likes and shares. */
+  id: string;
   slug: string;
   title: string;
   excerpt: string;
@@ -40,15 +42,6 @@ export type Post = {
   date: string;
   tags: string[];
   body: Block[];
-};
-
-export type Comment = {
-  id: string;
-  parentId: string | null;
-  author: string;
-  body: string;
-  date: string;
-  likes: number;
 };
 
 export type Podcast = {

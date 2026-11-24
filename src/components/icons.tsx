@@ -185,3 +185,30 @@ export const PencilIcon = (p: IconProps) => (
     <path d="m13.5 6.5 4 4" />
   </Icon>
 );
+
+export const LinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Icon>
+);
+
+export const MailIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m4 7 8 6 8-6" />
+  </Icon>
+);
+
+export const FacebookLogo = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 21v-8h3l.5-3.5H14V7.8c0-1 .3-1.8 1.8-1.8h1.8V3a24 24 0 0 0-2.6-.1C12.4 2.9 10.6 4.5 10.6 7.4v2.1H7.5V13h3.1v8" />
+  </Icon>
+);
+
+export const WhatsAppLogo = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 20l1.2-4.1A8.5 8.5 0 1 1 8.4 19L4 20Z" />
+    <path d="M9 8.5c0 3.6 2.9 6.5 6.5 6.5l1-1.6-2-1-1 .9a4.4 4.4 0 0 1-2.3-2.3l.9-1-1-2Z" />
+  </Icon>
+);
