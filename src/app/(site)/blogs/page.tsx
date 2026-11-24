@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function BlogsPage() {
-  return <BlogsFeed page={1} />;
+  return <BlogsFeed />;
 }
