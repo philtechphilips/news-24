@@ -1,12 +1,11 @@
-import { getBlog } from "@/lib/blog";
-import { pageCount, postsPage } from "@/lib/content";
+import { getPostsPage } from "@/lib/blog";
 import BlogShell from "./BlogShell";
 import { PostGrid, SectionHeader } from "./cards";
 import Pagination from "./Pagination";
 
+/** /blogs and /blogs/page/[page]: one page of 12 posts, paged by the API. */
 export default async function BlogsFeed({ page }: { page: number }) {
-  const blog = await getBlog();
-  const posts = postsPage(blog, page);
+  const { posts, pageCount } = await getPostsPage(page);
   return (
     <BlogShell
       title="Blogs"
@@ -21,7 +20,7 @@ export default async function BlogsFeed({ page }: { page: number }) {
           No stories have been published yet.
         </p>
       )}
-      <Pagination current={page} total={pageCount(blog)} />
+      <Pagination current={page} total={pageCount} />
     </BlogShell>
   );
 }

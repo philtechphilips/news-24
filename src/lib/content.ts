@@ -18,11 +18,6 @@ export const getCategory = (blog: Blog, slug: string) =>
 /** The newest stories lead the home page. */
 export const spotlightPosts = (blog: Blog, count = 4) => blog.posts.slice(0, count);
 
-export const PAGE_SIZE = 9;
-export const pageCount = (blog: Blog) => Math.max(1, Math.ceil(blog.posts.length / PAGE_SIZE));
-export const postsPage = (blog: Blog, page: number) =>
-  blog.posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
 export const postsByCategory = (blog: Blog, slug: string) =>
   blog.posts.filter((p) => p.category === slug);
 

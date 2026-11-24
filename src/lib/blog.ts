@@ -25,24 +25,66 @@ export async function getBlog(): Promise<Blog> {
   cacheTag(BLOG_TAG);
   cacheLife("minutes");
 
-  const [apiPosts, apiCategories, apiWriters, apiPodcasts] = await Promise.all([
+  const [apiPosts, apiPodcasts, lookups] = await Promise.all([
     fetchJson<ApiPost[]>("/posts/?limit=100"),
-    fetchJson<ApiCategory[]>("/categories/?limit=100"),
-    fetchJson<ApiWriter[]>("/writers/?limit=100"),
     fetchJson<ApiPodcast[]>("/podcasts/?limit=100"),
+    getLookups(),
   ]);
-  const categories = apiCategories.map(toCategory);
-  const categoryById = new Map(apiCategories.map((c, i) => [c.id, categories[i]]));
-  const writers = apiWriters.map(toWriter);
-  const writerSlug = new Map(apiWriters.map((w) => [w.id, w.slug]));
-  const slugOf = (id: string | null) => (id && writerSlug.get(id)) || "";
+  const { categories, writers, toSitePost, writerSlugOf } = mappers(lookups);
   return {
-    posts: apiPosts.map((post) =>
-      toPost(post, categoryById.get(post.category_id ?? ""), slugOf(post.writer_id)),
-    ),
+    posts: apiPosts.map(toSitePost),
     categories,
     writers,
-    podcasts: apiPodcasts.map((podcast) => toPodcast(podcast, slugOf(podcast.host_id))),
+    podcasts: apiPodcasts.map((podcast) => toPodcast(podcast, writerSlugOf(podcast.host_id))),
+  };
+}
+
+export const POSTS_PER_PAGE = 12;
+
+export type PostsPage = { posts: Post[]; total: number; pageCount: number };
+
+/** One page of published posts, paged by the API (limit/skip + X-Total-Count). */
+export async function getPostsPage(page: number): Promise<PostsPage> {
+  "use cache";
+  cacheTag(BLOG_TAG);
+  cacheLife("minutes");
+
+  const params = new URLSearchParams({
+    limit: String(POSTS_PER_PAGE),
+    skip: String((page - 1) * POSTS_PER_PAGE),
+  });
+  const [res, lookups] = await Promise.all([fetch(`${API_URL}/posts/?${params}`), getLookups()]);
+  if (!res.ok) throw new Error(`API returned ${res.status} for /posts/?${params}`);
+  const total = Number(res.headers.get("X-Total-Count") ?? 0);
+  const posts = ((await res.json()) as ApiPost[]).map(mappers(lookups).toSitePost);
+  return { posts, total, pageCount: Math.max(1, Math.ceil(total / POSTS_PER_PAGE)) };
+}
+
+type Lookups = { apiCategories: ApiCategory[]; apiWriters: ApiWriter[] };
+
+/** Categories and writers, needed to label posts. Shared by the reads above. */
+async function getLookups(): Promise<Lookups> {
+  "use cache";
+  cacheTag(BLOG_TAG);
+  cacheLife("minutes");
+  const [apiCategories, apiWriters] = await Promise.all([
+    fetchJson<ApiCategory[]>("/categories/?limit=100"),
+    fetchJson<ApiWriter[]>("/writers/?limit=100"),
+  ]);
+  return { apiCategories, apiWriters };
+}
+
+function mappers({ apiCategories, apiWriters }: Lookups) {
+  const categories = apiCategories.map(toCategory);
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
+  const writerSlug = new Map(apiWriters.map((w) => [w.id, w.slug]));
+  const writerSlugOf = (id: string | null) => (id && writerSlug.get(id)) || "";
+  return {
+    categories,
+    writers: apiWriters.map(toWriter),
+    writerSlugOf,
+    toSitePost: (post: ApiPost) =>
+      toPost(post, categoryById.get(post.category_id ?? ""), writerSlugOf(post.writer_id)),
   };
 }
 
