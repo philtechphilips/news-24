@@ -11,21 +11,27 @@ export const getPodcast = (slug: string) =>
   podcasts.find((p) => p.slug === slug);
 
 export const allPosts = () => [...posts].sort(byNewest);
-export const featuredPosts = () => posts.filter((p) => p.featured);
-export const trendingPosts = () => posts.filter((p) => p.trending);
 
-/** Newest news stories, leaving out the featured hero stories and the design blog. */
-export const latestNews = (count = 4) =>
-  allPosts()
-    .filter((p) => !p.featured && !p.trending && p.category !== "design")
-    .slice(0, count);
+/** The four stories at the top of the home page: featured first, then trending. */
+export const spotlightPosts = (count = 4) => {
+  const picks = [...posts.filter((p) => p.featured), ...posts.filter((p) => p.trending)];
+  return [...new Set(picks)].slice(0, count);
+};
 
-/** Most-read guides from the Design blog. */
-export const popularBlogs = (count = 6) =>
-  posts
-    .filter((p) => p.category === "design")
-    .sort((a, b) => b.views - a.views)
-    .slice(0, count);
+export const PAGE_SIZE = 9;
+export const pageCount = () => Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
+export const postsPage = (page: number) =>
+  allPosts().slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+export type SearchItem = { slug: string; title: string; image: string; category: string };
+
+export const searchIndex = (): SearchItem[] =>
+  allPosts().map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    image: p.image,
+    category: getCategory(p.category)?.name ?? "",
+  }));
 
 export const postsByWriter = (slug: string) =>
   allPosts().filter((p) => p.writer === slug);

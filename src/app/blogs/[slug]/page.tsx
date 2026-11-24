@@ -61,7 +61,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
         <div className="mt-6">
           <CategoryTag slug={post.category} link />
         </div>
-        <h1 className="mt-4 text-3xl leading-tight font-semibold tracking-tight md:text-5xl md:leading-[1.1]">
+        <h1 className="mt-5 font-display text-4xl leading-[1.1] md:text-6xl md:leading-[1.05]">
           {post.title}
         </h1>
         <p className="mt-5 text-base leading-7 text-muted md:text-lg">{post.excerpt}</p>
@@ -158,7 +158,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
         </div>
       </div>
 
-      <section className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+      <section className="page-shell mt-24 pb-24 md:pb-32">
         <SectionHeader title="Keep reading" href="/blogs" />
         <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {relatedPosts(post).map((p) => (
@@ -176,7 +176,7 @@ function BodyBlock({ block }: { block: Block }) {
       return <p className="text-[17px] leading-8 text-neutral-700">{block.text}</p>;
     case "h2":
       return (
-        <h2 className="pt-6 text-2xl font-semibold tracking-tight text-ink">{block.text}</h2>
+        <h2 className="pt-6 font-display text-3xl leading-[1.15] text-ink">{block.text}</h2>
       );
     case "quote":
       return (

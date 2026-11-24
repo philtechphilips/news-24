@@ -52,6 +52,12 @@ export const ArrowRightIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+);
+
 export const HeartIcon = ({ filled, ...p }: IconProps & { filled?: boolean }) => (
   <Icon {...p} fill={filled ? "currentColor" : "none"}>
     <path d="M12 20s-7-4.4-9.2-8.6C1.3 8.5 3 5 6.4 5c2 0 3.3 1.1 4.1 2.3h3c.8-1.2 2.1-2.3 4.1-2.3C21 5 22.7 8.5 21.2 11.4 19 15.6 12 20 12 20Z" />

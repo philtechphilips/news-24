@@ -37,7 +37,7 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
   const firstName = writer.name.split(" ")[0];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <div className="page-shell pb-24 md:pb-32">
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 pt-10 text-xs text-muted">
         <Link href="/" className="hover:text-ink">
           Home
@@ -61,10 +61,10 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
         </div>
 
         <div className="flex flex-col">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
+          <p className="text-sm font-medium text-brand-ink">
             {writer.role}
           </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">{writer.name}</h1>
+          <h1 className="mt-3 font-display text-4xl leading-[1.05] md:text-6xl">{writer.name}</h1>
           <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
             <span className="flex items-center gap-1">
               <PinIcon size={14} /> {writer.location}
@@ -89,7 +89,7 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
           <dl className="mt-8 grid max-w-md grid-cols-3 divide-x divide-line rounded-xl border border-line">
             {stats.map((stat) => (
               <div key={stat.label} className="px-4 py-4 text-center">
-                <dd className="text-2xl font-semibold">{stat.value}</dd>
+                <dd className="font-display text-3xl">{stat.value}</dd>
                 <dt className="mt-1 text-[11px] text-muted">{stat.label}</dt>
               </div>
             ))}

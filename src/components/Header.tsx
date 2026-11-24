@@ -4,70 +4,66 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { SearchItem } from "@/lib/content";
 import { CloseIcon, MenuIcon, SearchIcon } from "./icons";
-import { socials } from "./socials";
-
-type SearchItem = { slug: string; title: string; image: string; category: string };
 
 const nav = [
-  { href: "/about", label: "About" },
-  { href: "/category/economy", label: "Economy" },
-  { href: "/category/style", label: "Style" },
-  { href: "/category/art", label: "Art" },
   { href: "/blogs", label: "Blogs" },
   { href: "/writers", label: "Writers" },
   { href: "/podcasts", label: "Podcasts" },
+  { href: "/about", label: "About" },
 ];
 
 export default function Header({ searchIndex }: { searchIndex: SearchItem[] }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const isHome = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+    pathname === href ||
+    pathname.startsWith(`${href}/`) ||
+    (href === "/blogs" && pathname.startsWith("/category/"));
 
   return (
-    <header className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-      <div className="flex h-16 items-center justify-between gap-4">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            className="-ml-2 rounded-full p-2 text-ink transition hover:bg-surface"
-            aria-label="Search articles"
-          >
-            <SearchIcon />
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            className="rounded-full p-2 text-ink transition hover:bg-surface md:hidden"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <CloseIcon /> : <MenuIcon />}
-          </button>
-        </div>
+    <header
+      className={`sticky inset-x-0 top-0 z-40 border-b bg-white transition-colors duration-200 ${
+        scrolled || menuOpen ? "border-ink/10" : "border-transparent"
+      }`}
+    >
+      <a
+        href="#main-content"
+        className="sr-only rounded-sm bg-white px-2 text-sm focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
+      >
+        Skip to content
+      </a>
+      <div className="page-shell flex h-15 items-center gap-x-6 md:h-16 lg:h-20 lg:gap-x-8">
+        <Link
+          href="/"
+          onClick={() => setMenuOpen(false)}
+          className="shrink-0 font-display text-2xl leading-none tracking-tight"
+        >
+          NEWS<span className="text-brand">24</span>
+        </Link>
 
-        {!isHome && (
-          <Link
-            href="/"
-            className="text-2xl font-extrabold tracking-tight md:hidden"
-          >
-            NEWS 24
-          </Link>
-        )}
-
-        <nav aria-label="Main" className="hidden md:block">
-          <ul className="flex items-center gap-7">
+        <nav aria-label="Main" className="hidden lg:block">
+          <ul className="flex gap-x-6">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`text-[11px] font-medium uppercase tracking-[0.12em] transition hover:text-brand ${
-                    isActive(item.href) ? "text-brand" : "text-ink"
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`border-b py-1 text-[15px] transition-colors ${
+                    isActive(item.href)
+                      ? "border-current"
+                      : "border-transparent hover:border-current"
                   }`}
                 >
                   {item.label}
@@ -77,33 +73,50 @@ export default function Header({ searchIndex }: { searchIndex: SearchItem[] }) {
           </ul>
         </nav>
 
-        <ul className="flex items-center gap-1.5">
-          {socials.map(({ href, label, Icon }) => (
-            <li key={label}>
-              <a
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={label}
-                className="grid size-7 place-items-center rounded-md border border-line text-ink transition hover:border-ink"
-              >
-                <Icon size={13} />
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="ml-auto flex items-center gap-2 md:gap-3">
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="grid size-10 place-items-center rounded-full transition-colors hover:bg-surface"
+            aria-label="Search articles"
+          >
+            <SearchIcon />
+          </button>
+          <Link
+            href="/login"
+            className="hidden rounded-full border border-ink px-5 py-2.5 text-[15px] leading-none font-medium transition-colors hover:bg-ink hover:text-white sm:inline-flex"
+          >
+            Log in
+          </Link>
+          <a
+            href="#subscribe"
+            className="hidden rounded-full border border-ink bg-ink px-5 py-2.5 text-[15px] leading-none font-medium text-white transition-colors hover:border-brand hover:bg-brand sm:inline-flex"
+          >
+            Subscribe
+          </a>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            className="grid size-10 place-items-center rounded-full transition-colors hover:bg-surface lg:hidden"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+          >
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
       </div>
 
       {menuOpen && (
-        <nav aria-label="Mobile" className="border-t border-line pb-4 md:hidden">
-          <ul className="grid grid-cols-2 gap-1 pt-3">
+        <nav id="mobile-menu" aria-label="Mobile" className="page-shell pb-6 lg:hidden">
+          <ul className="border-t border-ink/10">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`block rounded-md px-3 py-2 text-sm font-medium ${
-                    isActive(item.href) ? "bg-brand-soft text-brand" : "hover:bg-surface"
+                  className={`block border-b border-ink/10 py-4 font-display text-2xl ${
+                    isActive(item.href) ? "text-brand-ink" : ""
                   }`}
                 >
                   {item.label}
@@ -111,24 +124,23 @@ export default function Header({ searchIndex }: { searchIndex: SearchItem[] }) {
               </li>
             ))}
           </ul>
+          <div className="mt-6 flex gap-3 sm:hidden">
+            <Link
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className="flex-1 rounded-full border border-ink py-3 text-center text-[15px] font-medium"
+            >
+              Log in
+            </Link>
+            <a
+              href="#subscribe"
+              onClick={() => setMenuOpen(false)}
+              className="flex-1 rounded-full bg-ink py-3 text-center text-[15px] font-medium text-white"
+            >
+              Subscribe
+            </a>
+          </div>
         </nav>
-      )}
-
-      {isHome ? (
-        <Link href="/" className="block select-none">
-          <h1 className="pt-2 pb-6 text-center text-[clamp(3.6rem,20vw,16.75rem)] leading-[0.95] font-bold tracking-[-0.04em] text-ink">
-            NEWS 24
-          </h1>
-        </Link>
-      ) : (
-        <div className="hidden border-b border-line pb-5 md:block">
-          <Link
-            href="/"
-            className="block text-center text-5xl font-bold tracking-[-0.04em]"
-          >
-            NEWS 24
-          </Link>
-        </div>
       )}
 
       {searchOpen && (
@@ -169,7 +181,7 @@ function SearchDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 px-4 pt-[12vh]"
+      className="fixed inset-0 z-50 bg-brand-deep/60 px-4 pt-[12vh] backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -179,28 +191,26 @@ function SearchDialog({
         className="mx-auto w-full max-w-xl overflow-hidden rounded-xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 border-b border-line px-4">
+        <div className="flex items-center gap-3 border-b border-ink/10 px-4">
           <SearchIcon className="text-muted" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search news and blogs…"
-            className="h-14 flex-1 bg-transparent text-sm outline-none placeholder:text-muted"
+            className="h-14 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted"
           />
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-line px-2 py-1 text-[10px] font-medium text-muted"
+            className="rounded-md border border-ink/10 px-2 py-1 text-[10px] font-medium text-muted"
           >
             ESC
           </button>
         </div>
         <ul className="max-h-[60vh] overflow-y-auto p-2">
           {!q && (
-            <li className="px-3 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted">
-              Latest
-            </li>
+            <li className="px-3 pt-2 pb-1 text-xs font-medium text-muted">Latest</li>
           )}
           {results.map((item) => (
             <li key={item.slug}>
@@ -214,7 +224,7 @@ function SearchDialog({
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{item.title}</span>
-                  <span className="text-xs text-muted">{item.category}</span>
+                  <span className="text-xs text-brand-ink">{item.category}</span>
                 </span>
               </Link>
             </li>

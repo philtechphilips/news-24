@@ -8,67 +8,56 @@ export const categories: Category[] = [
     slug: "economy",
     name: "Economy",
     description: "Markets, money and the forces shaping the global economy.",
-    tagClass: "bg-brand text-white",
   },
   {
     slug: "style",
     name: "Style",
     description: "Fashion, trends and the culture of how we look and live.",
-    tagClass: "bg-blue-600 text-white",
   },
   {
     slug: "art",
     name: "Art",
     description: "Artists, exhibitions and the stories behind creative work.",
-    tagClass: "bg-green-600 text-white",
   },
   {
     slug: "world",
     name: "World News",
     description: "Reporting from around the globe on the stories that matter.",
-    tagClass: "bg-ink text-white",
   },
   {
     slug: "technology",
     name: "Technology",
     description: "AI, security and the products changing how we work.",
-    tagClass: "bg-indigo-600 text-white",
   },
   {
     slug: "sports",
     name: "Sports",
     description: "Results, records and the athletes behind them.",
-    tagClass: "bg-orange-500 text-white",
   },
   {
     slug: "science",
     name: "Science",
     description: "Discoveries from labs, field work and research teams.",
-    tagClass: "bg-teal-600 text-white",
   },
   {
     slug: "politics",
     name: "Politics",
     description: "Elections, policy and the people in power.",
-    tagClass: "bg-slate-700 text-white",
   },
   {
     slug: "health",
     name: "Health",
     description: "Public health, medicine and living well.",
-    tagClass: "bg-rose-500 text-white",
   },
   {
     slug: "entertainment",
     name: "Entertainment",
     description: "Film, television, music and the people who make them.",
-    tagClass: "bg-purple-600 text-white",
   },
   {
     slug: "design",
     name: "Design",
     description: "Product design, UX and building things people love to use.",
-    tagClass: "bg-amber-500 text-ink",
   },
 ];
 

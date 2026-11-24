@@ -24,7 +24,7 @@ export default async function PodcastPage({ params }: PageProps<"/podcasts/[slug
   const host = getWriter(podcast.host);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <div className="page-shell pb-24 md:pb-32">
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 pt-10 text-xs text-muted">
         <Link href="/" className="hover:text-ink">
           Home
@@ -48,10 +48,10 @@ export default async function PodcastPage({ params }: PageProps<"/podcasts/[slug
         </div>
 
         <div className="flex flex-col">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand">
+          <p className="flex items-center gap-2 text-sm font-medium text-brand-ink">
             <MicIcon size={14} /> Podcast episode
           </p>
-          <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight md:text-4xl">
+          <h1 className="mt-3 font-display text-3xl leading-[1.1] md:text-5xl">
             {podcast.title}
           </h1>
           <p className="mt-4 text-[15px] leading-7 text-muted">{podcast.description}</p>

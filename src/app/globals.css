@@ -3,16 +3,33 @@
 @theme {
   --color-brand: #e5322d;
   --color-brand-dark: #c42520;
-  --color-brand-soft: #fdeceb;
-  --color-ink: #141414;
-  --color-muted: #6b6b6b;
-  --color-line: #ececec;
-  --color-surface: #f6f6f6;
+  /* Coral scale used for cards, labels and the footer band */
+  --color-brand-soft: #ffe3e3;
+  --color-brand-light: #ffbdbd;
+  --color-brand-ink: #7c0033;
+  --color-brand-deep: #440220;
+
+  --color-ink: #0d0d0d;
+  --color-muted: #5f6061;
+  --color-line: #e6e6e4;
+  --color-surface: #f7f8f6;
   --color-night: #1c1c1c;
 }
 
 @theme inline {
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-varela), ui-rounded, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Page-width container shared by the header, footer and every page. */
+@utility page-shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 88rem;
+  padding-inline: 1.25rem;
+  @media (width >= 48rem) {
+    padding-inline: 2rem;
+  }
 }
 
 body {

@@ -2,8 +2,6 @@ export type Category = {
   slug: string;
   name: string;
   description: string;
-  /** Tailwind classes for the small category tag. */
-  tagClass: string;
 };
 
 export type Writer = {

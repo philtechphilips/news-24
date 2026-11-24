@@ -6,7 +6,7 @@ import { login, type LoginState } from "@/app/login/actions";
 const initialState: LoginState = { error: null, email: "" };
 
 const inputClass =
-  "h-11 w-full rounded-md border border-line bg-white px-4 text-sm text-ink outline-none transition placeholder:text-muted focus:border-brand focus:ring-2 focus:ring-brand/20";
+  "h-12 w-full rounded-lg border border-ink/5 bg-ink/3 px-4 text-[15px] text-ink outline-none transition placeholder:text-ink/45 focus:border-ink/30 focus:bg-white";
 
 export default function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
@@ -46,7 +46,7 @@ export default function LoginForm() {
 
       <p
         aria-live="polite"
-        className={`rounded-md bg-brand-soft px-4 py-3 text-sm text-brand-dark ${
+        className={`rounded-lg bg-brand-soft px-4 py-3 text-sm text-brand-ink ${
           state.error ? "" : "hidden"
         }`}
       >
@@ -56,7 +56,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="h-11 w-full rounded-md bg-brand text-xs font-semibold uppercase tracking-wider text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
+        className="h-12 w-full rounded-full bg-ink text-[15px] font-medium text-white transition-colors hover:bg-brand disabled:cursor-wait disabled:opacity-70"
       >
         {pending ? "Signing in…" : "Log in"}
       </button>

@@ -18,7 +18,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <div className="page-shell pb-24 md:pb-32">
       <PageIntro
         eyebrow="About News 24"
         title="News in the front line, explained clearly"
@@ -28,7 +28,7 @@ export default function AboutPage() {
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line md:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white px-6 py-8">
-            <dd className="text-4xl font-semibold tracking-tight">{stat.value}</dd>
+            <dd className="font-display text-5xl">{stat.value}</dd>
             <dt className="mt-2 text-xs text-muted">{stat.label}</dt>
           </div>
         ))}
@@ -50,7 +50,7 @@ export default function AboutPage() {
           },
         ].map((value) => (
           <div key={value.title} className="border-t-2 border-brand pt-5">
-            <h2 className="text-lg font-medium">{value.title}</h2>
+            <h2 className="font-display text-2xl">{value.title}</h2>
             <p className="mt-2 text-sm leading-6 text-muted">{value.text}</p>
           </div>
         ))}
@@ -66,20 +66,20 @@ export default function AboutPage() {
       </section>
 
       <section className="mt-20 rounded-xl bg-surface p-8 md:p-12">
-        <h2 className="text-2xl font-medium">Get in touch</h2>
+        <h2 className="font-display text-3xl">Get in touch</h2>
         <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
           Have a tip, a correction or an idea for a story? We read every message.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <a
             href="mailto:info@news24.com"
-            className="rounded-sm bg-brand px-4 py-2 text-xs font-medium text-white hover:bg-brand-dark"
+            className="rounded-full bg-ink px-5 py-3 text-[15px] font-medium text-white transition-colors hover:bg-brand"
           >
             info@news24.com
           </a>
           <Link
             href="/#subscribe"
-            className="rounded-sm border border-ink px-4 py-2 text-xs font-medium hover:bg-ink hover:text-white"
+            className="rounded-full border border-ink px-5 py-3 text-[15px] font-medium transition-colors hover:bg-ink hover:text-white"
           >
             Subscribe to updates
           </Link>

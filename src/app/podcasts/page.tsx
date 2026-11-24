@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PodcastsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <div className="page-shell pb-24 md:pb-32">
       <PageIntro
         eyebrow="Podcasts"
         title="Listen to News 24"
