@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
-import type { ApiPost, FormState, Role } from "@/lib/api-types";
+import type { ApiPost, FormState } from "@/lib/api-types";
 
 const text = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
 
@@ -80,9 +80,25 @@ export async function deleteCategory(formData: FormData) {
 
 // ---------- Users ----------
 
-export async function setUserRole(_prev: FormState, formData: FormData) {
-  const role = text(formData, "role") as Role;
-  return attempt(() =>
-    api(`/users/${text(formData, "id")}/role`, { method: "PATCH", json: { role } }),
+export async function createAdmin(_prev: FormState, formData: FormData): Promise<FormState> {
+  const email = text(formData, "email");
+  const result = await attempt(() =>
+    api("/users/admins", {
+      method: "POST",
+      json: { email, password: String(formData.get("password") ?? "") },
+    }),
   );
+  return result.ok ? { ok: true, message: `${email} can now use the dashboard.` } : result;
+}
+
+/** Grants admin rights when `admin` is "true", removes them otherwise. */
+export async function setAdmin(formData: FormData) {
+  const method = formData.get("admin") === "true" ? "PUT" : "DELETE";
+  await api(`/users/${text(formData, "id")}/admin`, { method });
+  refresh();
+}
+
+export async function deleteUser(formData: FormData) {
+  await api(`/users/${text(formData, "id")}`, { method: "DELETE" });
+  refresh();
 }

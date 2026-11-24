@@ -33,6 +33,7 @@ export type ApiPost = {
 /** What a form action returns: a banner message and/or per-field messages. */
 export type FormState = {
   ok?: boolean;
+  message?: string;
   error?: string;
   fields?: Record<string, string>;
 };
