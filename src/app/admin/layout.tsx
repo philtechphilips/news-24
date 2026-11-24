@@ -17,12 +17,10 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
     <div className="flex flex-1 flex-col bg-surface lg:flex-row">
       <AdminSidebar />
       <main id="main-content" className="min-w-0 flex-1 px-5 py-8 md:px-10 md:py-12">
-        <div className="mx-auto max-w-6xl">
-          {/* Reads the session cookie, so it streams in behind this boundary. */}
-          <Suspense fallback={<AdminSkeleton />}>
-            <AdminGate>{children}</AdminGate>
-          </Suspense>
-        </div>
+        {/* Reads the session cookie, so it streams in behind this boundary. */}
+        <Suspense fallback={<AdminSkeleton />}>
+          <AdminGate>{children}</AdminGate>
+        </Suspense>
       </main>
     </div>
   );
