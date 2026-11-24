@@ -1,20 +1,25 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
+import { BLOG_TAG } from "@/lib/blog";
 import type { ApiPost, FormState } from "@/lib/api-types";
 
 const text = (formData: FormData, key: string) => String(formData.get(key) ?? "").trim();
 
 /** Runs an API call; API errors become form errors, anything else is rethrown. */
-async function attempt(call: () => Promise<unknown>): Promise<FormState> {
+async function attempt(
+  call: () => Promise<unknown>,
+  { publicContent = false } = {},
+): Promise<FormState> {
   try {
     await call();
   } catch (error) {
     if (error instanceof ApiError) return error.toFormState();
     throw error;
   }
+  if (publicContent) updateTag(BLOG_TAG);
   refresh();
   return { ok: true };
 }
@@ -48,11 +53,14 @@ export async function savePost(_prev: FormState, formData: FormData): Promise<Fo
     if (error instanceof ApiError) return error.toFormState();
     throw error;
   }
+  // The public site shows the change on its next request.
+  updateTag(BLOG_TAG);
   redirect(`/admin/posts?saved=${encodeURIComponent(saved.title)}`);
 }
 
 export async function deletePost(formData: FormData) {
   await api(`/posts/${text(formData, "id")}`, { method: "DELETE" });
+  updateTag(BLOG_TAG);
   refresh();
 }
 
@@ -61,6 +69,7 @@ export async function deletePost(formData: FormData) {
 export async function createCategory(_prev: FormState, formData: FormData) {
   return attempt(() =>
     api("/categories/", { method: "POST", json: { name: text(formData, "name") } }),
+    { publicContent: true },
   );
 }
 
@@ -70,11 +79,13 @@ export async function renameCategory(_prev: FormState, formData: FormData) {
       method: "PATCH",
       json: { name: text(formData, "name") },
     }),
+    { publicContent: true },
   );
 }
 
 export async function deleteCategory(formData: FormData) {
   await api(`/categories/${text(formData, "id")}`, { method: "DELETE" });
+  updateTag(BLOG_TAG);
   refresh();
 }
 

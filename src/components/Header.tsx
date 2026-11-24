@@ -220,7 +220,16 @@ function SearchDialog({
                 className="flex items-center gap-3 rounded-lg p-2 hover:bg-surface"
               >
                 <span className="relative size-12 shrink-0 overflow-hidden rounded-md bg-surface">
-                  <Image src={item.image} alt="" fill sizes="48px" className="object-cover" />
+                  {item.image && (
+                    <Image
+                      src={item.image}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      unoptimized={!item.image.startsWith("https://images.unsplash.com/")}
+                      className="object-cover"
+                    />
+                  )}
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{item.title}</span>

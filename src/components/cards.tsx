@@ -1,20 +1,62 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatDate, getCategory, postsByWriter, readTime } from "@/lib/content";
+import { formatDate, readTime } from "@/lib/content";
 import type { Podcast, Post, Writer } from "@/lib/types";
 import { CornerDownRightIcon, MicIcon } from "./icons";
+import SiteMark from "./SiteMark";
 
-export function CategoryTag({ slug, link = false }: { slug: string; link?: boolean }) {
-  const category = getCategory(slug);
-  if (!category) return null;
+export function CategoryTag({
+  slug,
+  name,
+  link = false,
+}: {
+  slug: string;
+  name: string;
+  link?: boolean;
+}) {
   const className =
     "inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand-ink";
-  return link ? (
-    <Link href={`/category/${category.slug}`} className={`${className} hover:bg-brand-light`}>
-      {category.name}
+  return link && slug ? (
+    <Link href={`/category/${slug}`} className={`${className} hover:bg-brand-light`}>
+      {name}
     </Link>
   ) : (
-    <span className={className}>{category.name}</span>
+    <span className={className}>{name}</span>
+  );
+}
+
+/** Only Unsplash is configured for next/image; other hosts load as-is. */
+const optimizable = (src: string) => src.startsWith("https://images.unsplash.com/photo-");
+
+/** A post's cover filling its (relative) parent, or the site mark when it has none. */
+export function PostCover({
+  post,
+  sizes,
+  preload = false,
+  className = "",
+}: {
+  post: Post;
+  sizes: string;
+  preload?: boolean;
+  className?: string;
+}) {
+  if (!post.image) {
+    return (
+      <span className="absolute inset-0 grid place-items-center bg-brand-soft" aria-hidden="true">
+        <SiteMark size={56} className="rounded-xl opacity-90" />
+      </span>
+    );
+  }
+  return (
+    <Image
+      src={post.image}
+      alt={post.imageAlt}
+      fill
+      preload={preload}
+      sizes={sizes}
+      unoptimized={!optimizable(post.image)}
+      className={`object-cover ${className}`}
+    />
   );
 }
 
@@ -133,12 +175,11 @@ export function PageIntro({
 
 /** Large deep-coral card that leads the spotlight block. */
 export function SpotlightLead({ post }: { post: Post }) {
-  const category = getCategory(post.category);
   return (
     <article className="group relative">
       <div className="overflow-hidden rounded-xl bg-brand-deep px-6 pt-6 text-white md:px-16 md:pt-12">
         <div className="max-w-2xl space-y-4 md:space-y-6">
-          <CardLabel label={category?.name ?? "Story"} meta={readTime(post)} tone="text-brand-light" />
+          <CardLabel label={post.categoryName} meta={readTime(post)} tone="text-brand-light" />
           <h2 className="font-display text-3xl leading-[1.1] md:text-5xl">
             <Link href={`/blogs/${post.slug}`} className={stretchedLink}>
               {post.title}
@@ -148,14 +189,7 @@ export function SpotlightLead({ post }: { post: Post }) {
         </div>
         <div className="relative mt-6 aspect-214/85 translate-y-2 overflow-hidden rounded-tr-xl bg-white/10 transition-transform duration-700 group-hover:translate-y-0 md:mt-10">
           <NotchTopLeft color="var(--color-brand-deep)" />
-          <Image
-            src={post.image}
-            alt={post.imageAlt}
-            fill
-            preload
-            sizes="(min-width: 768px) 75vw, 100vw"
-            className="object-cover"
-          />
+          <PostCover post={post} preload sizes="(min-width: 768px) 75vw, 100vw" />
         </div>
       </div>
     </article>
@@ -164,10 +198,9 @@ export function SpotlightLead({ post }: { post: Post }) {
 
 /** Pastel text-only card that sits under the lead story. */
 export function SpotlightCard({ post }: { post: Post }) {
-  const category = getCategory(post.category);
   return (
     <article className="group relative flex h-full flex-col rounded-xl bg-brand-soft p-6 text-ink lg:px-8 lg:py-10">
-      <CardLabel label={category?.name ?? "Story"} meta={readTime(post)} tone="text-brand-ink" />
+      <CardLabel label={post.categoryName} meta={readTime(post)} tone="text-brand-ink" />
       <h3 className="mt-6 mb-6 text-lg leading-snug font-medium tracking-[-0.01em] md:mt-12">
         <Link href={`/blogs/${post.slug}`} className={stretchedLink}>
           {post.title}
@@ -180,19 +213,16 @@ export function SpotlightCard({ post }: { post: Post }) {
 }
 
 export function BlogCard({ post }: { post: Post }) {
-  const category = getCategory(post.category);
   return (
     <article className="group relative flex flex-col">
       <div className="relative mb-5 aspect-312/163 overflow-hidden rounded-md bg-surface">
-        <Image
-          src={post.image}
-          alt={post.imageAlt}
-          fill
+        <PostCover
+          post={post}
           sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+          className="transition-transform duration-500 group-hover:scale-[1.04]"
         />
       </div>
-      <CardLabel label={category?.name ?? "Story"} meta={readTime(post)} tone="text-brand-ink" />
+      <CardLabel label={post.categoryName} meta={readTime(post)} tone="text-brand-ink" />
       <h3 className="mt-3 text-lg leading-snug font-medium tracking-[-0.01em] group-hover:text-brand-ink">
         <Link href={`/blogs/${post.slug}`} className={stretchedLink}>
           {post.title}
@@ -217,8 +247,7 @@ export function PostGrid({ posts }: { posts: Post[] }) {
   );
 }
 
-export function WriterCard({ writer, showCount = false }: { writer: Writer; showCount?: boolean }) {
-  const count = postsByWriter(writer.slug).length;
+export function WriterCard({ writer }: { writer: Writer }) {
   return (
     <Link href={`/writers/${writer.slug}`} className="group block">
       <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-surface">
@@ -231,10 +260,7 @@ export function WriterCard({ writer, showCount = false }: { writer: Writer; show
         />
       </div>
       <p className="mt-4 text-base font-medium group-hover:text-brand-ink">{writer.name}</p>
-      <p className="text-sm text-muted">
-        {writer.role}
-        {showCount && ` · ${count} ${count === 1 ? "article" : "articles"}`}
-      </p>
+      <p className="text-sm text-muted">{writer.role}</p>
     </Link>
   );
 }

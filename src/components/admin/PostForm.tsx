@@ -113,6 +113,10 @@ export default function PostForm({
               placeholder="Start writing…"
               className={`${inputClass} resize-y leading-7`}
             />
+            <p className="mt-1.5 text-xs text-muted">
+              Leave a blank line between paragraphs. Start a line with <code>## </code> for a
+              heading, <code>&gt; </code> for a quote or <code>- </code> for a list item.
+            </p>
             {error("body")}
           </div>
         </Card>

@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageIntro, SectionHeader, WriterCard } from "@/components/cards";
+import { getBlog } from "@/lib/blog";
 import { activeCategories } from "@/lib/content";
-import { podcasts, posts, writers } from "@/lib/data";
+import { podcasts, writers } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "About",
   description: "News 24 is an independent publication for news, ideas and practical guides.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const blog = await getBlog();
   const stats = [
-    { label: "Stories published", value: posts.length },
+    { label: "Stories published", value: blog.posts.length },
     { label: "Staff writers", value: writers.length },
-    { label: "Topics covered", value: activeCategories().length },
+    { label: "Topics covered", value: activeCategories(blog).length },
     { label: "Podcast episodes", value: podcasts.length },
   ];
 

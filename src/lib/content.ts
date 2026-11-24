@@ -1,57 +1,46 @@
-import { categories, podcasts, posts, writers } from "./data";
+import type { Blog } from "./blog";
+import { podcasts, writers } from "./data";
 import type { Post } from "./types";
 
-const byNewest = (a: Post, b: Post) => b.date.localeCompare(a.date);
+/** Helpers over the posts and categories fetched by getBlog(), plus the static writers and podcasts. */
 
-export const getPost = (slug: string) => posts.find((p) => p.slug === slug);
 export const getWriter = (slug: string) => writers.find((w) => w.slug === slug);
-export const getCategory = (slug: string) =>
-  categories.find((c) => c.slug === slug);
-export const getPodcast = (slug: string) =>
-  podcasts.find((p) => p.slug === slug);
+export const getPodcast = (slug: string) => podcasts.find((p) => p.slug === slug);
 
-export const allPosts = () => [...posts].sort(byNewest);
+export const getPost = (blog: Blog, slug: string) => blog.posts.find((p) => p.slug === slug);
+export const getCategory = (blog: Blog, slug: string) =>
+  blog.categories.find((c) => c.slug === slug);
 
-/** The four stories at the top of the home page: featured first, then trending. */
-export const spotlightPosts = (count = 4) => {
-  const picks = [...posts.filter((p) => p.featured), ...posts.filter((p) => p.trending)];
-  return [...new Set(picks)].slice(0, count);
-};
+/** The newest stories lead the home page. */
+export const spotlightPosts = (blog: Blog, count = 4) => blog.posts.slice(0, count);
 
 export const PAGE_SIZE = 9;
-export const pageCount = () => Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
-export const postsPage = (page: number) =>
-  allPosts().slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+export const pageCount = (blog: Blog) => Math.max(1, Math.ceil(blog.posts.length / PAGE_SIZE));
+export const postsPage = (blog: Blog, page: number) =>
+  blog.posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-export type SearchItem = { slug: string; title: string; image: string; category: string };
+export const postsByCategory = (blog: Blog, slug: string) =>
+  blog.posts.filter((p) => p.category === slug);
 
-export const searchIndex = (): SearchItem[] =>
-  allPosts().map((p) => ({
+/** Categories that have at least one post, in API order. */
+export const activeCategories = (blog: Blog) =>
+  blog.categories.filter((c) => blog.posts.some((p) => p.category === c.slug));
+
+export const relatedPosts = (blog: Blog, post: Post, count = 3) => {
+  const others = blog.posts.filter((p) => p.slug !== post.slug);
+  const sameCategory = others.filter((p) => post.category && p.category === post.category);
+  return [...sameCategory, ...others.filter((p) => !sameCategory.includes(p))].slice(0, count);
+};
+
+export type SearchItem = { slug: string; title: string; image: string | null; category: string };
+
+export const searchIndex = (blog: Blog): SearchItem[] =>
+  blog.posts.map((p) => ({
     slug: p.slug,
     title: p.title,
     image: p.image,
-    category: getCategory(p.category)?.name ?? "",
+    category: p.categoryName,
   }));
-
-export const postsByWriter = (slug: string) =>
-  allPosts().filter((p) => p.writer === slug);
-
-export const postsByCategory = (slug: string) =>
-  allPosts().filter((p) => p.category === slug);
-
-/** Categories that have at least one post, in display order. */
-export const activeCategories = () =>
-  categories.filter((c) => posts.some((p) => p.category === c.slug));
-
-export const relatedPosts = (post: Post, count = 3) => {
-  const sameCategory = postsByCategory(post.category).filter(
-    (p) => p.slug !== post.slug,
-  );
-  const others = allPosts().filter(
-    (p) => p.slug !== post.slug && p.category !== post.category,
-  );
-  return [...sameCategory, ...others].slice(0, count);
-};
 
 export function readTime(post: Post) {
   const words = post.body

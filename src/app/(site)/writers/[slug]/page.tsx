@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogCard, SectionHeader, WriterCard } from "@/components/cards";
+import { SectionHeader, WriterCard } from "@/components/cards";
 import { PinIcon } from "@/components/icons";
 import { socials } from "@/components/socials";
-import { formatCount, formatDate, getWriter, postsByWriter } from "@/lib/content";
+import { formatDate, getWriter } from "@/lib/content";
 import { podcasts, writers } from "@/lib/data";
 
 export function generateStaticParams() {
@@ -23,13 +23,7 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
   const writer = getWriter((await params).slug);
   if (!writer) notFound();
 
-  const articles = postsByWriter(writer.slug);
   const episodes = podcasts.filter((p) => p.host === writer.slug);
-  const stats = [
-    { label: "Articles", value: String(articles.length) },
-    { label: "Reads", value: formatCount(articles.reduce((sum, p) => sum + p.views, 0)) },
-    { label: "Likes", value: formatCount(articles.reduce((sum, p) => sum + p.likes, 0)) },
-  ];
   const links = socials.flatMap((s) => {
     const href = writer.social[s.key];
     return href ? [{ ...s, href }] : [];
@@ -86,14 +80,6 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
             ))}
           </ul>
 
-          <dl className="mt-8 grid max-w-md grid-cols-3 divide-x divide-line rounded-xl border border-line">
-            {stats.map((stat) => (
-              <div key={stat.label} className="px-4 py-4 text-center">
-                <dd className="font-display text-3xl">{stat.value}</dd>
-                <dt className="mt-1 text-[11px] text-muted">{stat.label}</dt>
-              </div>
-            ))}
-          </dl>
 
           {links.length > 0 && (
             <ul className="mt-8 flex gap-2">
@@ -113,21 +99,6 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
             </ul>
           )}
         </div>
-      </section>
-
-      <section className="mt-20">
-        <SectionHeader title={`Articles by ${firstName}`} />
-        {articles.length > 0 ? (
-          <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((post) => (
-              <BlogCard key={post.slug} post={post} />
-            ))}
-          </div>
-        ) : (
-          <p className="rounded-lg bg-surface py-10 text-center text-sm text-muted">
-            {firstName} hasn&apos;t published any articles yet.
-          </p>
-        )}
       </section>
 
       {episodes.length > 0 && (
@@ -156,7 +127,7 @@ export default async function WriterPage({ params }: PageProps<"/writers/[slug]"
             .filter((w) => w.slug !== writer.slug)
             .slice(0, 4)
             .map((w) => (
-              <WriterCard key={w.slug} writer={w} showCount />
+              <WriterCard key={w.slug} writer={w} />
             ))}
         </div>
       </section>

@@ -2,10 +2,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { ApiUser, FormState } from "./api-types";
+import { API_URL } from "./config";
 
 /** Server-side only: talks to the FastAPI backend as the logged-in user. */
 
-export const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
+export { API_URL };
 export const SESSION_COOKIE = "news24_token";
 
 export class ApiError extends Error {

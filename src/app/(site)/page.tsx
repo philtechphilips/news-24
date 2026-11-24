@@ -8,25 +8,32 @@ import {
   SpotlightLead,
   WriterCard,
 } from "@/components/cards";
-import { allPosts, spotlightPosts } from "@/lib/content";
+import { getBlog } from "@/lib/blog";
+import { spotlightPosts } from "@/lib/content";
 import { podcasts, writers } from "@/lib/data";
 
-export default function Home() {
-  const spotlight = spotlightPosts();
+export default async function Home() {
+  const blog = await getBlog();
+  const spotlight = spotlightPosts(blog);
   const [lead, ...cards] = spotlight;
-  const latest = allPosts()
-    .filter((p) => !spotlight.includes(p))
-    .slice(0, 9);
+  const latest = blog.posts.slice(spotlight.length, spotlight.length + 9);
 
   return (
     <BlogShell
       title="News & Stories"
       description="Dive into the stories shaping the world. Stay ahead with reporting and analysis on the economy, technology, style, art and much more."
     >
+      {!lead && (
+        <p className="mb-16 rounded-xl bg-surface py-16 text-center text-muted">
+          No stories have been published yet. Check back soon.
+        </p>
+      )}
       <ul aria-label="Spotlight" className="grid gap-6 pb-12 md:grid-cols-3 md:gap-y-8 md:pb-24">
-        <li className="md:col-span-3">
-          <SpotlightLead post={lead} />
-        </li>
+        {lead && (
+          <li className="md:col-span-3">
+            <SpotlightLead post={lead} />
+          </li>
+        )}
         {cards.map((post) => (
           <li key={post.slug}>
             <SpotlightCard post={post} />
@@ -35,6 +42,7 @@ export default function Home() {
       </ul>
 
       <div className="space-y-16 md:space-y-24">
+        {latest.length > 0 && (
         <section>
           <SectionHeader title="Latest Posts" href="/blogs" />
           <PostGrid posts={latest} />
@@ -45,6 +53,7 @@ export default function Home() {
             Browse all stories
           </Link>
         </section>
+        )}
 
         <section>
           <SectionHeader title="Latest Podcasts" href="/podcasts" />

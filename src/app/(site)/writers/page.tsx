@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { PageIntro } from "@/components/cards";
-import { postsByWriter } from "@/lib/content";
 import { writers } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -21,7 +20,6 @@ export default function WritersPage() {
 
       <ul className="grid gap-x-4 gap-y-12 border-t border-line pt-10 sm:grid-cols-2 lg:grid-cols-4">
         {writers.map((writer) => {
-          const count = postsByWriter(writer.slug).length;
           return (
             <li key={writer.slug}>
               <Link href={`/writers/${writer.slug}`} className="group block">
@@ -44,9 +42,6 @@ export default function WritersPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-muted">
-                {count} {count === 1 ? "article" : "articles"}
-              </p>
             </li>
           );
         })}

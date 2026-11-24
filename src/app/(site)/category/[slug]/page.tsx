@@ -3,24 +3,29 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BlogShell from "@/components/BlogShell";
 import { PostGrid, SectionHeader } from "@/components/cards";
+import { getBlog } from "@/lib/blog";
 import { getCategory, postsByCategory } from "@/lib/content";
-import { categories } from "@/lib/data";
 
-export function generateStaticParams() {
-  return categories.map((c) => ({ slug: c.slug }));
+export async function generateStaticParams() {
+  const { categories } = await getBlog();
+  // Cache Components needs at least one param; the placeholder 404s.
+  return categories.length
+    ? categories.map((c) => ({ slug: c.slug }))
+    : [{ slug: "__placeholder__" }];
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/category/[slug]">): Promise<Metadata> {
-  const category = getCategory((await params).slug);
+  const category = getCategory(await getBlog(), (await params).slug);
   return category ? { title: category.name, description: category.description } : {};
 }
 
 export default async function CategoryPage({ params }: PageProps<"/category/[slug]">) {
-  const category = getCategory((await params).slug);
+  const blog = await getBlog();
+  const category = getCategory(blog, (await params).slug);
   if (!category) notFound();
-  const posts = postsByCategory(category.slug);
+  const posts = postsByCategory(blog, category.slug);
 
   return (
     <BlogShell title={category.name} description={category.description} activeTopic={category.slug}>

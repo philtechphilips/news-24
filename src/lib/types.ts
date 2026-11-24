@@ -26,15 +26,14 @@ export type Post = {
   slug: string;
   title: string;
   excerpt: string;
-  image: string;
+  /** Cover image URL, or null when the post has none. */
+  image: string | null;
   imageAlt: string;
+  /** Category slug ("" when uncategorised) and its display name. */
   category: string;
-  writer: string;
+  categoryName: string;
   date: string;
-  views: number;
-  likes: number;
-  featured?: boolean;
-  trending?: boolean;
+  tags: string[];
   body: Block[];
 };
 

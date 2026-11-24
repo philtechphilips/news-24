@@ -1,44 +1,41 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BlogCard, CategoryTag, SectionHeader } from "@/components/cards";
+import { BlogCard, CategoryTag, PostCover, SectionHeader } from "@/components/cards";
 import Comments from "@/components/Comments";
 import PostActions from "@/components/PostActions";
-import {
-  formatCount,
-  formatDate,
-  getCategory,
-  getPost,
-  getWriter,
-  readTime,
-  relatedPosts,
-} from "@/lib/content";
-import { posts, seedComments } from "@/lib/data";
+import { getBlog } from "@/lib/blog";
+import { formatDate, getPost, readTime, relatedPosts } from "@/lib/content";
+import { seedComments } from "@/lib/data";
 import type { Block } from "@/lib/types";
 
-export function generateStaticParams() {
-  return posts.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const { posts } = await getBlog();
+  // Cache Components needs at least one param; the placeholder 404s.
+  return posts.length ? posts.map((p) => ({ slug: p.slug })) : [{ slug: "__placeholder__" }];
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/blogs/[slug]">): Promise<Metadata> {
-  const post = getPost((await params).slug);
+  const post = getPost(await getBlog(), (await params).slug);
   if (!post) return {};
   return {
     title: post.title,
     description: post.excerpt,
-    openGraph: { title: post.title, description: post.excerpt, images: [post.image] },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      ...(post.image && { images: [post.image] }),
+    },
   };
 }
 
 export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]">) {
-  const post = getPost((await params).slug);
+  const blog = await getBlog();
+  const post = getPost(blog, (await params).slug);
   if (!post) notFound();
 
-  const writer = getWriter(post.writer);
-  const category = getCategory(post.category);
   const comments = seedComments[post.slug] ?? [];
 
   return (
@@ -52,14 +49,18 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
           <Link href="/blogs" className="hover:text-ink">
             Blogs
           </Link>
-          <span aria-hidden="true">/</span>
-          <Link href={`/category/${post.category}`} className="hover:text-ink">
-            {category?.name}
-          </Link>
+          {post.category && (
+            <>
+              <span aria-hidden="true">/</span>
+              <Link href={`/category/${post.category}`} className="hover:text-ink">
+                {post.categoryName}
+              </Link>
+            </>
+          )}
         </nav>
 
         <div className="mt-6">
-          <CategoryTag slug={post.category} link />
+          <CategoryTag slug={post.category} name={post.categoryName} link />
         </div>
         <h1 className="mt-5 font-display text-4xl leading-[1.1] md:text-6xl md:leading-[1.05]">
           {post.title}
@@ -67,20 +68,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
         <p className="mt-5 text-base leading-7 text-muted md:text-lg">{post.excerpt}</p>
 
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 border-y border-line py-4">
-          {writer && (
-            <Link href={`/writers/${writer.slug}`} className="group flex items-center gap-3">
-              <span className="relative size-10 overflow-hidden rounded-full bg-surface">
-                <Image src={writer.avatar} alt="" fill sizes="40px" className="object-cover" />
-              </span>
-              <span>
-                <span className="block text-sm font-medium group-hover:text-brand">
-                  {writer.name}
-                </span>
-                <span className="block text-xs text-muted">{writer.role}</span>
-              </span>
-            </Link>
-          )}
-          <dl className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted sm:ml-auto">
+          <dl className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted">
             <div>
               <dt className="sr-only">Published</dt>
               <dd>
@@ -91,24 +79,13 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
               <dt className="sr-only">Reading time</dt>
               <dd>{readTime(post)}</dd>
             </div>
-            <div>
-              <dt className="sr-only">Views</dt>
-              <dd>{formatCount(post.views)} views</dd>
-            </div>
           </dl>
         </div>
       </header>
 
       <div className="mx-auto mt-10 max-w-5xl px-4 sm:px-6">
         <div className="relative aspect-video overflow-hidden rounded-xl bg-surface">
-          <Image
-            src={post.image}
-            alt={post.imageAlt}
-            fill
-            preload
-            sizes="(min-width: 1024px) 1024px, 100vw"
-            className="object-cover"
-          />
+          <PostCover post={post} preload sizes="(min-width: 1024px) 1024px, 100vw" />
         </div>
       </div>
 
@@ -123,35 +100,10 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
           <PostActions
             slug={post.slug}
             title={post.title}
-            baseLikes={post.likes}
+            baseLikes={0}
             seedCommentCount={comments.length}
           />
         </div>
-
-        {writer && (
-          <aside className="mt-10 flex flex-col gap-5 rounded-xl bg-surface p-6 sm:flex-row">
-            <Link
-              href={`/writers/${writer.slug}`}
-              className="relative size-20 shrink-0 overflow-hidden rounded-full bg-white"
-            >
-              <Image src={writer.avatar} alt={`Portrait of ${writer.name}`} fill sizes="80px" className="object-cover" />
-            </Link>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                Written by
-              </p>
-              <p className="mt-1 text-lg font-medium">{writer.name}</p>
-              <p className="text-xs text-muted">{writer.role}</p>
-              <p className="mt-3 text-sm leading-6 text-neutral-700">{writer.bio[0]}</p>
-              <Link
-                href={`/writers/${writer.slug}`}
-                className="mt-4 inline-block text-xs font-medium text-brand hover:underline"
-              >
-                More from {writer.name.split(" ")[0]} →
-              </Link>
-            </div>
-          </aside>
-        )}
 
         <div className="mt-16">
           <Comments slug={post.slug} seed={comments} />
@@ -161,7 +113,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blogs/[slug]"
       <section className="page-shell mt-24 pb-24 md:pb-32">
         <SectionHeader title="Keep reading" href="/blogs" />
         <div className="grid gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {relatedPosts(post).map((p) => (
+          {relatedPosts(blog, post).map((p) => (
             <BlogCard key={p.slug} post={p} />
           ))}
         </div>
